@@ -101,10 +101,12 @@ end
 local function tokenize(path)
   local tokens = split(path, "/")
 
-  local last_token, extension_with_dot = tokens[#tokens]:match('(.*)(%.[^%.]*)$')
-  if last_token then
-    tokens[#tokens] = last_token
-    tokens[#tokens + 1] = extension_with_dot
+  if #tokens > 0 then
+    local last_token, extension_with_dot = tokens[#tokens]:match('(.*)(%.[^%.]*)$')
+    if last_token then
+      tokens[#tokens] = last_token
+      tokens[#tokens + 1] = extension_with_dot
+    end
   end
 
   tokens[#tokens + 1] = EOL
@@ -118,8 +120,7 @@ local function is_path_equivalent(path1, path2)
   if #path2 ~= #path1 then return false end
 
   for i=1, #path1 do
-    if path2[i] ~= path2[i] and
-       path1[i] ~= WILDCARD and path2[i] ~= WILDCARD then
+    if path1[i] ~= path2[i] and path1[i] ~= WILDCARD and path2[i] ~= WILDCARD then
       return false
     end
   end
@@ -182,7 +183,7 @@ function Derivator:get_paths()
 end
 
 function Derivator:find(path)
-  return choose(self:get_paths(), function(x) is_path_equivalent(path, x) end)
+  return choose(self:get_paths(), function(x) return is_path_equivalent(path, x) end)
 end
 
 function Derivator:add(path)
