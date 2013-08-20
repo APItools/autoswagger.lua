@@ -10,20 +10,39 @@ local EOL = derivator.EOL
 local histogram = derivator.histogram
 local WILDCARD = derivator.WILDCARD
 
-local function keep_if(t, fun)
-  local res = {}
-  for _,v in ipairs(t) do
-    if fun(v) then res[#res + 1] = v end
+local function choose(array, f)
+  local result, length = {}, 0
+  for i=1, #array do
+    if f(array[i]) then
+      length = length + 1
+      result[length] = array[i]
+    end
   end
-  return res
+  return result
 end
 
-local function map(t, fun)
-  local res = {}
-  for _,v in ipairs(t) do
-    table.insert(res, fun(v))
+local function map(array, f)
+  local result, length = {}, 0
+  for i=1, #array do
+    length = length + 1
+    result[length] = f(array[i])
   end
-  return res
+  return result
+end
+
+local function includes(array, item)
+  for i=1, #array do
+    if array[i] == item then return true end
+  end
+  return false
+end
+
+local function get_max(t, default)
+  local max = default or -math.huge
+  for _,v in pairs(t) do
+    if v > max then max = v end
+  end
+  return max
 end
 
 local function split(str, delimiter)
@@ -34,11 +53,8 @@ local function split(str, delimiter)
   return result
 end
 
-local function includes(self, item)
-  for i=1, #self do
-    if self[i] == item then return true end
-  end
-  return false
+local function begins_with(str, prefix)
+  return str:sub(1,1) == prefix
 end
 
 ----------------------
@@ -47,25 +63,17 @@ derivator.is_mergeable = function(word1, word2)
 
   -- unmergeables
   if includes(derivator.unmergeable_words, word1) or
-     includes(derivator.unmergeable_words, word2) then
-    return false
-  end
-
+     includes(derivator.unmergeable_words, word2) or
   -- formats
-  if word1:sub(1,1) == '.' or
-    word2:sub(1,1) == '.' then
+     begins_with(word1, '.') or
+     begins_with(world2, '.') then
     return false
   end
 
-  local score1 = derivator.hist[word1] or 0
-  local score2 = derivator.hist[word2] or 0
+  local score1 = derivator.histogram[word1] or 0
+  local score2 = derivator.histogram[word2] or 0
 
-  local max = 0
-  for _,v in(derivator.hist) do
-    if v>max then
-      max = v
-    end
-  end
+  local max = get_max(values, 0)
 
   if max > 0 then
     score1 = score1 / max
@@ -75,17 +83,12 @@ derivator.is_mergeable = function(word1, word2)
     score2 = 0
   end
 
-  if score1 <= derivator.occurrences_threshold and
-    score_2 <= derivator.occurrences_threshold then
-    return true
-  else
-    return false
-  end
+  return score1 <= derivator.occurrences_threshold and
+         score2 <= derivator.occurrences_threshold
 end
 
 derivator.paths = function(tree, prefix)
-  prefix = prefix or ""
-  return derivator.paths_recur(tree, prefix)
+  return derivator.paths_recur(tree, prefix or "")
 end
 
 derivator.paths_recur = function(tree, prefix)
@@ -144,7 +147,7 @@ derivator.is_path_equivalent = function(path1, path2)
 end
 
 derivator.find = function(paths, path)
-  return keep_if(paths, function(x) is_path_equivalent(path, x) end)
+  return choose(paths, function(x) is_path_equivalent(path, x) end)
 end
 
 derivator.add = function(tree_spec, path)
