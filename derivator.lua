@@ -63,6 +63,11 @@ local function merge(t, other)
   return t
 end
 
+local function sort(array)
+  table.sort(array)
+  return array
+end
+
 ----------------------
 
 local function split(str, delimiter)
@@ -82,7 +87,6 @@ end
 local function get_paths_recursive(self, tree, prefix)
   local result = {}
   for node, children in pairs(tree) do
-  print(require('inspect')({node = node, children = children}))
     if node == EOL then
       result[#result + 1] = prefix
     else
@@ -174,7 +178,7 @@ function Derivator:find_mergeable_sibling(node, current_word, next_word)
 end
 
 function Derivator:get_paths()
-  return get_paths_recursive(self, self.spec, "")
+  return sort(get_paths_recursive(self, self.spec, ""))
 end
 
 function Derivator:find(path)
@@ -183,16 +187,14 @@ end
 
 function Derivator:add(path)
   local vpath     = vectorize(path)
-  local length    = #vpath
   local node      = self.spec
   local histogram = self.histogram
 
-  for i=1, length - 1 do
+  for i=1, #vpath do
     local word = vpath[i]
     if word ~= EOL then
       histogram[word] = (histogram[word] or 0) + 1
     end
-
 
     if not node[word] then
       local sibling = self:find_mergeable_sibling(node, word, vpath[i+1])

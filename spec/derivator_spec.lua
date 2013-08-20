@@ -2,7 +2,7 @@ local Derivator = require 'derivator'
 
 describe('Derivator', function()
   describe(':add', function()
-    it('kinda works', function()
+    it('builds the expected paths', function()
       local g = Derivator.new()
 
       g:add("/users/foo/activate.xml")
@@ -34,9 +34,9 @@ describe('Derivator', function()
         "/*/foo/activate.xml",
         "/*/foo5/activate.xml",
         "/applications/*/activate.xml",
-        "/users/*/activate.xml",
         "/fulanitos/*/activate.xml",
-        "/services/*/activate.xml"
+        "/services/*/activate.xml",
+        "/users/*/activate.xml"
       })
 
       --[[
