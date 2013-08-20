@@ -98,22 +98,22 @@ local function get_paths_recursive(self, tree, prefix)
 end
 
 -- given 'foo/bar/baz.jpg', return {'foo','bar','baz','.jpg', EOL}
-local function vectorize(path)
-  local words = split(path, "/")
+local function tokenize(path)
+  local tokens = split(path, "/")
 
-  local last_word, extension_with_dot = words[#words]:match('(.*)(%.[^%.]*)$')
-  if last_word then
-    words[#words] = last_word
-    words[#words + 1] = extension_with_dot
+  local last_token, extension_with_dot = tokens[#tokens]:match('(.*)(%.[^%.]*)$')
+  if last_token then
+    tokens[#tokens] = last_token
+    tokens[#tokens + 1] = extension_with_dot
   end
 
-  words[#words + 1] = EOL
-  return words
+  tokens[#tokens + 1] = EOL
+  return tokens
 end
 
 local function is_path_equivalent(path1, path2)
-  path1 = vectorize(path1)
-  path2 = vectorize(path2)
+  path1 = tokenize(path1)
+  path2 = tokenize(path2)
 
   if #path2 ~= #path1 then return false end
 
@@ -128,29 +128,29 @@ end
 
 ----------------------
 
-Derivator.new = function(threshold, unmergeable_words)
+Derivator.new = function(threshold, unmergeable_tokens)
   return setmetatable({
     threshold          = threshold         or 1.0,
-    unmergeable_words  = unmergeable_words or {},
+    unmergeable_tokens  = unmergeable_tokens or {},
     histogram          = {},
-    spec               = {}
+    root               = {}
   }, {
     __index = Derivator
   })
 end
 
-function Derivator:is_mergeable(word1, word2)
+function Derivator:is_mergeable(token1, token2)
   -- unmergeables
-  if includes(self.unmergeable_words, word1) or
-     includes(self.unmergeable_words, word2) or
+  if includes(self.unmergeable_tokens, token1) or
+     includes(self.unmergeable_tokens, token2) or
   -- formats
-     begins_with(word1, '.') or
-     begins_with(word2, '.') then
+     begins_with(token1, '.') or
+     begins_with(token2, '.') then
     return false
   end
 
-  local score1 = self.histogram[word1] or 0
-  local score2 = self.histogram[word2] or 0
+  local score1 = self.histogram[token1] or 0
+  local score2 = self.histogram[token2] or 0
 
   local max = get_max(self.histogram, 0)
 
@@ -166,11 +166,11 @@ function Derivator:is_mergeable(word1, word2)
          score2 <= self.threshold
 end
 
-function Derivator:find_mergeable_sibling(node, current_word, next_word)
-  if not next_word then return nil end
+function Derivator:find_mergeable_sibling(node, current_token, next_token)
+  if not next_token then return nil end
   for sibling, nephews in pairs(node) do
-    for word,_ in pairs(nephews) do
-      if word == next_word and self:is_mergeable(sibling, current_word) then
+    for token,_ in pairs(nephews) do
+      if token == next_token and self:is_mergeable(sibling, current_token) then
         return sibling
       end
     end
@@ -178,7 +178,7 @@ function Derivator:find_mergeable_sibling(node, current_word, next_word)
 end
 
 function Derivator:get_paths()
-  return sort(get_paths_recursive(self, self.spec, ""))
+  return sort(get_paths_recursive(self, self.root, ""))
 end
 
 function Derivator:find(path)
@@ -186,18 +186,18 @@ function Derivator:find(path)
 end
 
 function Derivator:add(path)
-  local vpath     = vectorize(path)
-  local node      = self.spec
+  local tokens    = tokenize(path)
+  local node      = self.root
   local histogram = self.histogram
 
-  for i=1, #vpath do
-    local word = vpath[i]
-    if word ~= EOL then
-      histogram[word] = (histogram[word] or 0) + 1
+  for i=1, #tokens do
+    local token = tokens[i]
+    if token ~= EOL then
+      histogram[token] = (histogram[token] or 0) + 1
     end
 
-    if not node[word] then
-      local sibling = self:find_mergeable_sibling(node, word, vpath[i+1])
+    if not node[token] then
+      local sibling = self:find_mergeable_sibling(node, token, tokens[i+1])
 
       if sibling then
         if sibling ~= WILDCARD then
@@ -205,13 +205,13 @@ function Derivator:add(path)
           merge(node[WILDCARD], node[sibling])
           node[sibling] = nil
         end
-        word = WILDCARD
+        token = WILDCARD
       else
-        node[word] = {}
+        node[token] = {}
       end
     end
 
-    node = node[word]
+    node = node[token]
   end
 end
 
