@@ -82,11 +82,12 @@ end
 local function get_paths_recursive(self, tree, prefix)
   local result = {}
   for node, children in pairs(tree) do
+  print(require('inspect')({node = node, children = children}))
     if node == EOL then
-      result[#result + 1] = v
+      result[#result + 1] = prefix
     else
       local separator = begins_with(node, '.') and "" or "/"
-      append(result, get_paths_recursive(self, v, prefix .. separator .. node))
+      append(result, get_paths_recursive(self, children, prefix .. separator .. node))
     end
   end
   return result
@@ -140,14 +141,14 @@ function Derivator:is_mergeable(word1, word2)
      includes(self.unmergeable_words, word2) or
   -- formats
      begins_with(word1, '.') or
-     begins_with(world2, '.') then
+     begins_with(word2, '.') then
     return false
   end
 
   local score1 = self.histogram[word1] or 0
   local score2 = self.histogram[word2] or 0
 
-  local max = get_max(values, 0)
+  local max = get_max(self.histogram, 0)
 
   if max > 0 then
     score1 = score1 / max
@@ -188,28 +189,27 @@ function Derivator:add(path)
 
   for i=1, length - 1 do
     local word = vpath[i]
-    if word ~= EOF then
+    if word ~= EOL then
       histogram[word] = (histogram[word] or 0) + 1
     end
 
-    if not node[word] then
-      if is_empty(node) then
-        node[word] = {}
-      else
-        local sibling = find_mergeable_sibling(node, word, vpath[i+1])
 
-        if sibling then
-          if sibling ~= WILDCARD then
-            node[WILDCARD] = node[WILDCARD] or {}
-            merge(node[WILDCARD], node[sibling])
-            node[sibling] = nil
-          end
-          word = WILDCARD
+    if not node[word] then
+      local sibling = self:find_mergeable_sibling(node, word, vpath[i+1])
+
+      if sibling then
+        if sibling ~= WILDCARD then
+          node[WILDCARD] = node[WILDCARD] or {}
+          merge(node[WILDCARD], node[sibling])
+          node[sibling] = nil
         end
+        word = WILDCARD
+      else
+        node[word] = {}
       end
     end
 
-    node = node[item]
+    node = node[word]
   end
 end
 
