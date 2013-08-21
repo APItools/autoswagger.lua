@@ -127,6 +127,17 @@ local function is_path_equivalent(path1, path2)
   return true
 end
 
+local function find_mergeable_sibling(self, node, current_token, next_token)
+  if not next_token then return nil end
+  for sibling, nephews in pairs(node) do
+    for token,_ in pairs(nephews) do
+      if token == next_token and self:is_mergeable(sibling, current_token) then
+        return sibling
+      end
+    end
+  end
+end
+
 ----------------------
 
 Derivator.new = function(threshold, unmergeable_tokens)
@@ -167,22 +178,13 @@ function Derivator:is_mergeable(token1, token2)
          score2 <= self.threshold
 end
 
-function Derivator:find_mergeable_sibling(node, current_token, next_token)
-  if not next_token then return nil end
-  for sibling, nephews in pairs(node) do
-    for token,_ in pairs(nephews) do
-      if token == next_token and self:is_mergeable(sibling, current_token) then
-        return sibling
-      end
-    end
-  end
-end
+
 
 function Derivator:get_paths()
   return sort(get_paths_recursive(self, self.root, ""))
 end
 
-function Derivator:find(path)
+function Derivator:match(path)
   return choose(self:get_paths(), function(x) return is_path_equivalent(path, x) end)
 end
 
@@ -198,7 +200,7 @@ function Derivator:add(path)
     end
 
     if not node[token] then
-      local sibling = self:find_mergeable_sibling(node, token, tokens[i+1])
+      local sibling = find_mergeable_sibling(self, node, token, tokens[i+1])
 
       if sibling then
         if sibling ~= WILDCARD then
@@ -241,7 +243,7 @@ end
 
 
 function Derivator:learn(path)
-  local matches = self:find(path)
+  local matches = self:match(path)
   local length = #matches
 
   if length == 0 then
