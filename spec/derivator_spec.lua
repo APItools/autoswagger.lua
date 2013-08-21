@@ -47,6 +47,35 @@ describe('Derivator', function()
     end)
   end)
 
+  describe(':remove', function()
+    it('removes the given path rules', function()
+
+      local g = create_derivator_1()
+
+      assert.truthy(g:remove("/*/foo5/activate.xml"))
+
+      assert.same(g:get_paths(), {
+        "/*/foo/activate.xml",
+        "/applications/*/activate.xml",
+        "/fulanitos/*/activate.xml",
+        "/services/*/activate.xml",
+        "/users/*/activate.xml"
+      })
+
+      assert.truthy(g:remove("/services/*/activate.xml"))
+
+      assert.same(g:get_paths(), {
+        "/*/foo/activate.xml",
+        "/applications/*/activate.xml",
+        "/fulanitos/*/activate.xml",
+        "/users/*/activate.xml"
+      })
+
+      -- remove only works for exact paths, not for matches
+      assert.equals(false, g:remove("/*/*/activate.xml"))
+    end)
+  end)
+
   describe(':find', function()
     it('finds paths', function()
       local g = create_derivator_1()
@@ -62,6 +91,11 @@ describe('Derivator', function()
       assert.same({}, g:find("/"))
       assert.same({}, g:find("/*/*/activate.xml.whatever"))
       assert.same({}, g:find("/whatever/foo_not_there/activate.xml"))
+    end)
+  end)
+
+  describe(':learn', function()
+    it('adds new paths only when they are really new', function()
     end)
   end)
 

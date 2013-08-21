@@ -216,4 +216,55 @@ function Derivator:add(path)
   end
 end
 
+function Derivator:remove(path)
+  local tokens = tokenize(path)
+  local node   = self.root
+  local nodes, length  = {}, 0
+
+  for i=1,#tokens do
+    length = length + 1
+    nodes[length] = node
+    node = node[tokens[i]] or node[WILDCARD]
+    if not node then return false end
+  end
+
+  for i=length, 1, -1 do
+    for word,children in pairs(nodes[i]) do
+      if is_empty(children) then
+        nodes[i][word] = nil
+      end
+    end
+  end
+
+  return true
+end
+
+
+function Derivator:learn(path)
+  local matches = self:find(path)
+  local length = #matches
+
+  if length == 0 then
+    self:add(path)
+    return true
+  elseif length == 1 then
+    return false
+  else -- length > 1 => problem
+    local min = math.huge
+    local min_path
+    for i=1,length do
+      local score = self:get_score(matches[i])
+      if score < min then
+        score = min
+        min_path = matches[i]
+      end
+    end
+
+    self:remove(min_path)
+    return true
+  end
+end
+
+
+
 return Derivator
