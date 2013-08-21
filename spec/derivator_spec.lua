@@ -1,4 +1,5 @@
 local Derivator = require 'derivator'
+local EOL = Derivator.EOL
 
 local function create_derivator_1()
   local g = Derivator.new()
@@ -73,6 +74,46 @@ describe('Derivator', function()
 
       -- remove only works for exact paths, not for matches
       assert.equals(false, g:remove("/*/*/activate.xml"))
+    end)
+
+    it('#hello handles a regression test that happened in the past', function()
+      g = Derivator.new()
+
+      g.root = {
+        services = {
+          ["*"]= {
+            activate   = { [".xml"] = {[EOL]={}}},
+            deactivate = { [".xml"] = {[EOL]={}}},
+            suspend    = { [".xml"] = {[EOL]={}}},
+          },
+          foo6 = { ["*"] = {[".xml"] = {[EOL]={}}}},
+          foo7 = { ["*"] = {[".xml"] = {[EOL]={}}}},
+          foo8 = { ["*"] = {[".xml"] = {[EOL]={}}}},
+          foo9 = { ["*"] = {[".xml"] = {[EOL]={}}}}
+        }
+      }
+
+      assert.same(g:get_paths(), {
+        "/services/*/activate.xml",
+        "/services/*/deactivate.xml",
+        "/services/*/suspend.xml",
+        "/services/foo6/*.xml",
+        "/services/foo7/*.xml",
+        "/services/foo8/*.xml",
+        "/services/foo9/*.xml"
+      })
+
+      g:remove("/services/*/activate.xml")
+
+      assert.same(g:get_paths(), {
+        "/services/*/deactivate.xml",
+        "/services/*/suspend.xml",
+        "/services/foo6/*.xml",
+        "/services/foo7/*.xml",
+        "/services/foo8/*.xml",
+        "/services/foo9/*.xml"
+      })
+
     end)
   end)
 

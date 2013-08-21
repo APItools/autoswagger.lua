@@ -1,6 +1,6 @@
 local Derivator = {}
 
-Derivator.EOL      = "__EOL"
+Derivator.EOL      = setmetatable({}, {__tostring = function() return 'EOL' end})
 Derivator.WILDCARD = "*"
 
 local WILDCARD = Derivator.WILDCARD
@@ -84,14 +84,14 @@ end
 
 ----------------------
 
-local function get_paths_recursive(self, tree, prefix)
+local function get_paths_recursive(self, node, prefix)
   local result = {}
-  for node, children in pairs(tree) do
-    if node == EOL then
+  for token, children in pairs(node) do
+    if token == EOL then
       result[#result + 1] = prefix
     else
-      local separator = begins_with(node, '.') and "" or "/"
-      append(result, get_paths_recursive(self, children, prefix .. separator .. node))
+      local separator = begins_with(token, '.') and "" or "/"
+      append(result, get_paths_recursive(self, children, prefix .. separator .. token))
     end
   end
   return result
@@ -127,31 +127,9 @@ local function is_path_equivalent(path1, path2)
   return true
 end
 
-local function find_mergeable_sibling(self, node, current_token, next_token)
-  if not next_token then return nil end
-  for sibling, nephews in pairs(node) do
-    for token,_ in pairs(nephews) do
-      if token == next_token and self:is_mergeable(sibling, current_token) then
-        return sibling
-      end
-    end
-  end
-end
-
 ----------------------
 
-Derivator.new = function(threshold, unmergeable_tokens)
-  return setmetatable({
-    threshold          = threshold         or 1.0,
-    unmergeable_tokens  = unmergeable_tokens or {},
-    histogram          = {},
-    root               = {}
-  }, {
-    __index = Derivator
-  })
-end
-
-function Derivator:is_mergeable(token1, token2)
+local function is_mergeable(self, token1, token2)
   -- unmergeables
   if includes(self.unmergeable_tokens, token1) or
      includes(self.unmergeable_tokens, token2) or
@@ -178,7 +156,29 @@ function Derivator:is_mergeable(token1, token2)
          score2 <= self.threshold
 end
 
+local function find_mergeable_sibling(self, node, current_token, next_token)
+  if not next_token then return nil end
+  for sibling, nephews in pairs(node) do
+    for token,_ in pairs(nephews) do
+      if token == next_token and is_mergeable(self, sibling, current_token) then
+        return sibling
+      end
+    end
+  end
+end
 
+----------------------
+
+Derivator.new = function(threshold, unmergeable_tokens)
+  return setmetatable({
+    threshold          = threshold         or 1.0,
+    unmergeable_tokens  = unmergeable_tokens or {},
+    histogram          = {},
+    root               = {}
+  }, {
+    __index = Derivator
+  })
+end
 
 function Derivator:get_paths()
   return sort(get_paths_recursive(self, self.root, ""))
@@ -240,7 +240,6 @@ function Derivator:remove(path)
 
   return true
 end
-
 
 function Derivator:learn(path)
   local matches = self:match(path)
