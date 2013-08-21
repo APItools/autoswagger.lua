@@ -76,8 +76,8 @@ describe('Derivator', function()
       assert.equals(false, g:remove("/*/*/activate.xml"))
     end)
 
-    it('#hello handles a regression test that happened in the past', function()
-      g = Derivator.new()
+    it('handles a regression test that happened in the past', function()
+      local g = Derivator.new()
 
       g.root = {
         services = {
@@ -137,7 +137,7 @@ describe('Derivator', function()
 
   describe(':learn', function()
     it('adds new paths only when they are really new', function()
-      g = Derivator.new()
+      local g = Derivator.new()
 
       g:learn("/users/foo/activate.xml")
       assert.same( {"/users/foo/activate.xml"}, g:get_paths())
@@ -208,7 +208,7 @@ describe('Derivator', function()
     end)
 
     it('can handle edge cases', function()
-      g = Derivator.new()
+      local g = Derivator.new()
 
       g:learn("/services/foo6/activate.xml")
       g:learn("/services/foo7/activate.xml")
@@ -339,6 +339,71 @@ describe('Derivator', function()
       "/services/*/activate.xml",
       "/services/*/deactivate.xml"
     })
+
+  end)
+
+  it('unifies paths', function()
+    local g = Derivator.new()
+
+    g:learn("/services/foo6/activate.xml")
+    g:learn("/services/foo6/deactivate.xml")
+
+    assert.same( {"/services/foo6/*.xml"}, g:get_paths())
+
+    g:learn("/services/foo6/activate.xml")
+    g:learn("/services/foo6/deactivate.xml")
+
+    g:learn("/services/foo7/activate.xml")
+    g:learn("/services/foo7/deactivate.xml")
+
+    g:learn("/services/foo8/activate.xml")
+    g:learn("/services/foo8/deactivate.xml")
+
+    g:learn("/services/foo9/activate.xml")
+    g:learn("/services/foo9/deactivate.xml")
+
+    assert.same( {
+      "/services/foo6/*.xml",
+      "/services/foo7/*.xml",
+      "/services/foo8/*.xml",
+      "/services/foo9/*.xml"
+    }, g:get_paths())
+
+    g:learn("/services/foo1/activate.xml")
+    g:learn("/services/foo2/activate.xml")
+
+    assert.same( {
+      "/services/*/activate.xml",
+      "/services/foo6/*.xml",
+      "/services/foo7/*.xml",
+      "/services/foo8/*.xml",
+      "/services/foo9/*.xml"
+    }, g:get_paths())
+
+    for i=1,5 do
+      g:learn("/services/" .. tostring(i) .. "/deactivate.xml")
+      g:learn("/services/" .. tostring(i) .. "/activate.xml")
+    end
+
+
+    assert.same( {
+      "/services/*/activate.xml",
+      "/services/*/deactivate.xml",
+      "/services/foo6/*.xml",
+      "/services/foo7/*.xml",
+      "/services/foo8/*.xml",
+      "/services/foo9/*.xml"
+    }, g:get_paths())
+
+    g:learn("/services/foo6/activate.xml")
+    g:learn("/services/foo7/activate.xml")
+    g:learn("/services/foo8/deactivate.xml")
+    g:learn("/services/foo9/deactivate.xml")
+
+    assert.same( {
+      "/services/*/activate.xml",
+      "/services/*/deactivate.xml",
+    }, g:get_paths())
 
   end)
 

@@ -170,8 +170,8 @@ end
 local function get_score(self, path)
   local tokens = tokenize(path)
   local score = 0
-  for i=0, #tokens - 1 do
-    score = score + (self.histogram[token] or 0)
+  for i=0, #tokens do
+    score = score + (self.histogram[tokens[i]] or 0)
   end
   return score
 end
