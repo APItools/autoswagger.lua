@@ -137,6 +137,104 @@ describe('Derivator', function()
 
   describe(':learn', function()
     it('adds new paths only when they are really new', function()
+      g = Derivator.new()
+
+      g:learn("/users/foo/activate.xml")
+      assert.same( {"/users/foo/activate.xml"}, g:get_paths())
+
+      g:learn("/applications/foo/activate.xml")
+      assert.same( {"/*/foo/activate.xml"}, g:get_paths())
+
+      g:learn("/applications/foo2/activate.xml")
+      g:learn("/applications/foo3/activate.xml")
+      g:learn("/users/foo4/activate.xml")
+      g:learn("/users/foo5/activate.xml")
+      g:learn("/users/foo6/activate.xml")
+      g:learn("/users/foo7/activate.xml")
+
+      assert.same(g:get_paths(), {
+        "/*/foo/activate.xml",
+        "/applications/*/activate.xml",
+        "/users/*/activate.xml"
+      })
+
+      g:learn("/users/foo/activate.xml")
+
+      assert.same( g:get_paths(), {
+        "/applications/*/activate.xml",
+        "/users/*/activate.xml"
+      })
+
+      g:learn("/applications/foo4/activate.xml")
+      g:learn("/applications/foo5/activate.xml")
+
+      g:learn("/services/bar5/activate.xml")
+
+      g:learn("/fulanitos/bar5/activate.xml")
+      g:learn("/fulanitos/bar6/activate.xml")
+      g:learn("/fulanitos/bar7/activate.xml")
+      g:learn("/fulanitos/bar8/activate.xml")
+
+      g:learn("/services/foo6/activate.xml")
+      g:learn("/services/foo7/activate.xml")
+      g:learn("/services/foo8/activate.xml")
+
+      g:learn("/applications/foo4/activate.xml")
+      g:learn("/applications/foo5/activate.xml")
+
+      g:learn("/services/bar5/activate.xml")
+      g:learn("/fulanitos/bar5/activate.xml")
+
+      g:learn("/fulanitos/bar6/activate.xml")
+      g:learn("/fulanitos/bar7/activate.xml")
+      g:learn("/fulanitos/bar8/activate.xml")
+
+      g:learn("/services/bar6/activate.xml")
+      g:learn("/services/bar7/activate.xml")
+      g:learn("/services/bar8/activate.xml")
+
+
+      assert.same( g:get_paths(), {
+        "/applications/*/activate.xml",
+        "/fulanitos/*/activate.xml",
+        "/services/*/activate.xml",
+        "/users/*/activate.xml"
+      })
+
+      assert.same( {"/services/*/activate.xml"}, g:match("/services/foo8/activate.xml"))
+      assert.same( {"/services/*/activate.xml"}, g:match("/services/foo18/activate.xml"))
+      assert.same( {}, g:match("/services/foo8/activate.json"))
+      assert.same( {}, g:match("/ser/foo8/activate.xml"))
+    end)
+
+    it('can handle edge cases', function()
+      g = Derivator.new()
+
+      g:learn("/services/foo6/activate.xml")
+      g:learn("/services/foo7/activate.xml")
+      g:learn("/services/foo8/activate.xml")
+
+      assert.same( {"/services/*/activate.xml"}, g:get_paths())
+
+      g:learn("/services/foo6/deactivate.xml")
+      g:learn("/services/foo7/deactivate.xml")
+      g:learn("/services/foo8/deactivate.xml")
+
+      assert.same( g:get_paths(), {
+        "/services/*/activate.xml",
+        "/services/*/deactivate.xml"
+      })
+
+      g:learn("/services/foo/60.xml")
+      g:learn("/services/foo/61.xml")
+      g:learn("/services/foo/62.xml")
+
+      assert.same( g:get_paths(), {
+        "/services/*/activate.xml",
+        "/services/*/deactivate.xml",
+        "/services/foo/*.xml"
+      })
+
     end)
   end)
 

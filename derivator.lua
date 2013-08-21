@@ -167,12 +167,21 @@ local function find_mergeable_sibling(self, node, current_token, next_token)
   end
 end
 
+local function get_score(self, path)
+  local tokens = tokenize(path)
+  local score = 0
+  for i=0, #tokens - 1 do
+    score = score + (self.histogram[token] or 0)
+  end
+  return score
+end
+
 ----------------------
 
 Derivator.new = function(threshold, unmergeable_tokens)
   return setmetatable({
-    threshold          = threshold         or 1.0,
-    unmergeable_tokens  = unmergeable_tokens or {},
+    threshold          = threshold          or 1.0,
+    unmergeable_tokens = unmergeable_tokens or {},
     histogram          = {},
     root               = {}
   }, {
@@ -254,9 +263,9 @@ function Derivator:learn(path)
     local min = math.huge
     local min_path
     for i=1,length do
-      local score = self:get_score(matches[i])
+      local score = get_score(self, matches[i])
       if score < min then
-        score = min
+        min = score
         min_path = matches[i]
       end
     end
