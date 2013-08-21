@@ -236,6 +236,110 @@ describe('Derivator', function()
       })
 
     end)
+
+    it('understands threshold', function()
+
+      local g = Derivator.new() -- default: threshold = 1
+
+      g:learn("/services/foo6/activate.xml")
+      g:learn("/services/foo6/deactivate.xml")
+      g:learn("/services/foo7/activate.xml")
+      g:learn("/services/foo7/deactivate.xml")
+      g:learn("/services/foo8/activate.xml")
+      g:learn("/services/foo8/deactivate.xml")
+
+      assert.same( g:get_paths(), {
+        "/services/foo6/*.xml",
+        "/services/foo7/*.xml",
+        "/services/foo8/*.xml"
+      })
+
+      -- never merge
+      g = Derivator.new(0.0)
+
+      g:learn("/services/foo6/activate.xml")
+      g:learn("/services/foo6/deactivate.xml")
+      g:learn("/services/foo7/activate.xml")
+      g:learn("/services/foo7/deactivate.xml")
+      g:learn("/services/foo8/activate.xml")
+      g:learn("/services/foo8/deactivate.xml")
+
+      assert.same( g:get_paths(), {
+        "/services/foo6/activate.xml",
+        "/services/foo6/deactivate.xml",
+        "/services/foo7/activate.xml",
+        "/services/foo7/deactivate.xml",
+        "/services/foo8/activate.xml",
+        "/services/foo8/deactivate.xml"
+      })
+
+      g = Derivator.new(0.2)
+      -- fake the histogram so that the words that are not var are seen more often
+      -- the threshold 0.2 means that only merge if word is 5 (=1/0.2) times less frequent
+      -- than the most common word
+      g.histogram = {
+        services = 20, activate = 10, deactivate = 10,
+        foo6 = 1, foo7 = 1, foo8 = 1
+      }
+
+      g:learn("/services/foo6/activate.xml")
+      g:learn("/services/foo6/deactivate.xml")
+      g:learn("/services/foo7/activate.xml")
+      g:learn("/services/foo7/deactivate.xml")
+      g:learn("/services/foo8/activate.xml")
+      g:learn("/services/foo8/deactivate.xml")
+
+      assert.same( g:get_paths(), {
+        "/services/*/activate.xml",
+        "/services/*/deactivate.xml"
+      })
+    end)
+
+  end)
+
+  it('understands unmergeable tokens', function()
+    -- without unmergeable tokens
+    local g = Derivator.new()
+
+    g:add("/services/foo6/activate.xml")
+    g:add("/services/foo6/deactivate.xml")
+
+    assert.same( g:get_paths(), { "/services/foo6/*.xml" })
+
+    g:add("/services/foo7/activate.xml")
+    g:add("/services/foo7/deactivate.xml")
+
+    g:add("/services/foo8/activate.xml")
+    g:add("/services/foo8/deactivate.xml")
+
+    assert.same( g:get_paths(), {
+      "/services/foo6/*.xml",
+      "/services/foo7/*.xml",
+      "/services/foo8/*.xml"
+    })
+
+    -- with unmergeable tokens
+    g = Derivator.new(1.0, {"activate", "deactivate"})
+
+    g:add("/services/foo6/activate.xml")
+    g:add("/services/foo6/deactivate.xml")
+
+    assert.same( g:get_paths(), {
+      "/services/foo6/activate.xml",
+      "/services/foo6/deactivate.xml"
+    })
+
+    g:add("/services/foo7/activate.xml")
+    g:add("/services/foo7/deactivate.xml")
+
+    g:add("/services/foo8/activate.xml")
+    g:add("/services/foo8/deactivate.xml")
+
+    assert.same( g:get_paths(), {
+      "/services/*/activate.xml",
+      "/services/*/deactivate.xml"
+    })
+
   end)
 
 end)
