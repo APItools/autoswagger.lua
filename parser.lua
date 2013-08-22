@@ -187,7 +187,7 @@ local function get_path_score(self, hostname, path)
 end
 
 local function add_path(self, hostname, path)
-  self.hosts[hostname] = self.hosts[hostname] or {score={}, root={}}
+  self.hosts[hostname] = self.hosts[hostname] or {score={}, root={}, api={}}
   local host = self.hosts[hostname]
 
   local score  = host.score
@@ -220,6 +220,12 @@ local function add_path(self, hostname, path)
   end
 end
 
+local function increase_path_score(self, hostname, path)
+  local score = self.hosts[hostname].score
+  for _,token in ipairs(tokenize(path)) do
+    score[token] = (score[token] or 0) + 1
+  end
+end
 
 ----------------------
 
@@ -251,20 +257,26 @@ function Parser:learn(hostname, path)
     add_path(self, hostname, path)
     return true
   elseif length == 1 then
-    return false
+    increase_path_score(self, hostname, paths[1])
+    return true
   else -- length > 1 => problem
-    local min = math.huge
-    local min_path
+    local min,max = math.huge, -math.huge
+    local min_path, max_path
     for i=1,length do
       local score = get_path_score(self, hostname, paths[i])
       if score < min then
         min = score
         min_path = paths[i]
       end
+      if score > max then
+        max = score
+        max_path = paths[i]
+      end
     end
 
+    increase_path_score(self, hostname, max_path)
     self:unlearn(hostname, min_path)
-    return true
+    return false
   end
 end
 
