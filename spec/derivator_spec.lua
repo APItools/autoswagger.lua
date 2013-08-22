@@ -399,12 +399,12 @@ describe('Derivator', function()
 
   end)
 
-  describe(':remove', function()
-    it('removes the given path rules', function()
+  describe(':unlearn', function()
+    it('unlearns the given path rules', function()
 
       local g = create_derivator_1()
 
-      assert.truthy(g:remove("/*/foo5/activate.xml"))
+      assert.truthy(g:unlearn("/*/foo5/activate.xml"))
 
       assert.same(g:get_paths(), {
         "/*/foo/activate.xml",
@@ -414,7 +414,7 @@ describe('Derivator', function()
         "/users/*/activate.xml"
       })
 
-      assert.truthy(g:remove("/services/*/activate.xml"))
+      assert.truthy(g:unlearn("/services/*/activate.xml"))
 
       assert.same(g:get_paths(), {
         "/*/foo/activate.xml",
@@ -423,8 +423,8 @@ describe('Derivator', function()
         "/users/*/activate.xml"
       })
 
-      -- remove only works for exact paths, not for matches
-      assert.equals(false, g:remove("/*/*/activate.xml"))
+      -- unlearn only works for exact paths, not for matches
+      assert.equals(false, g:unlearn("/*/*/activate.xml"))
     end)
 
     it('handles a regression test that happened in the past', function()
@@ -454,7 +454,7 @@ describe('Derivator', function()
         "/services/foo9/*.xml"
       })
 
-      g:remove("/services/*/activate.xml")
+      g:unlearn("/services/*/activate.xml")
 
       assert.same(g:get_paths(), {
         "/services/*/deactivate.xml",

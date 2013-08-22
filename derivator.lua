@@ -228,8 +228,32 @@ function Derivator:match(path)
   return choose(self:get_paths(), function(x) return is_path_equivalent(path, x) end)
 end
 
+function Derivator:learn(path)
+  local matches = self:match(path)
+  local length = #matches
 
-function Derivator:remove(path)
+  if length == 0 then
+    add_path(self, path)
+    return true
+  elseif length == 1 then
+    return false
+  else -- length > 1 => problem
+    local min = math.huge
+    local min_path
+    for i=1,length do
+      local score = get_score(self, matches[i])
+      if score < min then
+        min = score
+        min_path = matches[i]
+      end
+    end
+
+    self:unlearn(min_path)
+    return true
+  end
+end
+
+function Derivator:unlearn(path)
   local tokens = tokenize(path)
   local node   = self.root
   local nodes, length  = {}, 0
@@ -251,32 +275,5 @@ function Derivator:remove(path)
 
   return true
 end
-
-function Derivator:learn(path)
-  local matches = self:match(path)
-  local length = #matches
-
-  if length == 0 then
-    add_path(self, path)
-    return true
-  elseif length == 1 then
-    return false
-  else -- length > 1 => problem
-    local min = math.huge
-    local min_path
-    for i=1,length do
-      local score = get_score(self, matches[i])
-      if score < min then
-        min = score
-        min_path = matches[i]
-      end
-    end
-
-    self:remove(min_path)
-    return true
-  end
-end
-
-
 
 return Derivator
