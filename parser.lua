@@ -1,10 +1,10 @@
-local PathFinder = {}
+local Parser = {}
 
-PathFinder.EOL      = setmetatable({}, {__tostring = function() return 'EOL' end})
-PathFinder.WILDCARD = "*"
+Parser.EOL      = setmetatable({}, {__tostring = function() return 'EOL' end})
+Parser.WILDCARD = "*"
 
-local WILDCARD = PathFinder.WILDCARD
-local EOL      = PathFinder.EOL
+local WILDCARD = Parser.WILDCARD
+local EOL      = Parser.EOL
 
 local function choose(array, f)
   local result, length = {}, 0
@@ -209,26 +209,26 @@ end
 
 ----------------------
 
-PathFinder.new = function(threshold, unmergeable_tokens)
+Parser.new = function(threshold, unmergeable_tokens)
   return setmetatable({
     threshold          = threshold          or 1.0,
     unmergeable_tokens = unmergeable_tokens or {},
     histogram          = {},
     root               = {}
   }, {
-    __index = PathFinder
+    __index = Parser
   })
 end
 
-function PathFinder:get_paths()
+function Parser:get_paths()
   return sort(get_paths_recursive(self, self.root, ""))
 end
 
-function PathFinder:match(path)
+function Parser:match(path)
   return choose(self:get_paths(), function(x) return is_path_equivalent(path, x) end)
 end
 
-function PathFinder:learn(path)
+function Parser:learn(path)
   local matches = self:match(path)
   local length = #matches
 
@@ -253,7 +253,7 @@ function PathFinder:learn(path)
   end
 end
 
-function PathFinder:unlearn(path)
+function Parser:unlearn(path)
   local tokens = tokenize(path)
   local node   = self.root
   local nodes, length  = {}, 0
@@ -276,4 +276,4 @@ function PathFinder:unlearn(path)
   return true
 end
 
-return PathFinder
+return Parser

@@ -1,8 +1,8 @@
-local PathFinder = require 'path_finder'
-local EOL = PathFinder.EOL
+local Parser = require 'parser'
+local EOL = Parser.EOL
 
 local function create_path_finder_1()
-  local g = PathFinder.new()
+  local g = Parser.new()
 
   g:learn("/users/foo/activate.xml")
   g:learn("/applications/foo/activate.xml")
@@ -30,7 +30,7 @@ local function create_path_finder_1()
   return g
 end
 
-describe('PathFinder', function()
+describe('Parser', function()
 
 
 
@@ -70,7 +70,7 @@ describe('PathFinder', function()
     end)
 
     it('adds new paths only when they are really new', function()
-      local g = PathFinder.new()
+      local g = Parser.new()
 
       g:learn("/users/foo/activate.xml")
       assert.same( {"/users/foo/activate.xml"}, g:get_paths())
@@ -141,7 +141,7 @@ describe('PathFinder', function()
     end)
 
     it('can handle edge cases', function()
-      local g = PathFinder.new()
+      local g = Parser.new()
 
       g:learn("/services/foo6/activate.xml")
       g:learn("/services/foo7/activate.xml")
@@ -172,7 +172,7 @@ describe('PathFinder', function()
 
     it('understands threshold', function()
 
-      local g = PathFinder.new() -- default: threshold = 1
+      local g = Parser.new() -- default: threshold = 1
 
       g:learn("/services/foo6/activate.xml")
       g:learn("/services/foo6/deactivate.xml")
@@ -188,7 +188,7 @@ describe('PathFinder', function()
       })
 
       -- never merge
-      g = PathFinder.new(0.0)
+      g = Parser.new(0.0)
 
       g:learn("/services/foo6/activate.xml")
       g:learn("/services/foo6/deactivate.xml")
@@ -206,7 +206,7 @@ describe('PathFinder', function()
         "/services/foo8/deactivate.xml"
       })
 
-      g = PathFinder.new(0.2)
+      g = Parser.new(0.2)
       -- fake the histogram so that the words that are not var are seen more often
       -- the threshold 0.2 means that only merge if word is 5 (=1/0.2) times less frequent
       -- than the most common word
@@ -232,7 +232,7 @@ describe('PathFinder', function()
 
   it('understands unmergeable tokens', function()
     -- without unmergeable tokens
-    local g = PathFinder.new()
+    local g = Parser.new()
 
     g:learn("/services/foo6/activate.xml")
     g:learn("/services/foo6/deactivate.xml")
@@ -252,7 +252,7 @@ describe('PathFinder', function()
     })
 
     -- with unmergeable tokens
-    g = PathFinder.new(1.0, {"activate", "deactivate"})
+    g = Parser.new(1.0, {"activate", "deactivate"})
 
     g:learn("/services/foo6/activate.xml")
     g:learn("/services/foo6/deactivate.xml")
@@ -276,7 +276,7 @@ describe('PathFinder', function()
   end)
 
   it('unifies paths', function()
-    local g = PathFinder.new()
+    local g = Parser.new()
 
     g:learn("/services/foo6/activate.xml")
     g:learn("/services/foo6/deactivate.xml")
@@ -341,7 +341,7 @@ describe('PathFinder', function()
   end)
 
   it('compresses paths (again)', function()
-    local g = PathFinder.new()
+    local g = Parser.new()
 
     g:learn("/admin/api/features.xml")
     g:learn("/admin/api/applications.xml")
@@ -361,7 +361,7 @@ describe('PathFinder', function()
 
   it('compresses in even more cases', function()
 
-    local g = PathFinder.new()
+    local g = Parser.new()
 
     g:learn("/admin/api/features.xml")
     g:learn("/admin/api/applications.xml")
@@ -378,7 +378,7 @@ describe('PathFinder', function()
       "/admin/xxx/*.xml"
     }, g:get_paths())
 
-    g = PathFinder.new()
+    g = Parser.new()
 
     g:learn("/admin/api/features.xml")
     g:learn("/admin/xxx/features.xml")
@@ -428,7 +428,7 @@ describe('PathFinder', function()
     end)
 
     it('handles a regression test that happened in the past', function()
-      local g = PathFinder.new()
+      local g = Parser.new()
 
       g.root = {
         services = {
