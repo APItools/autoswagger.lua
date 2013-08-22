@@ -1,10 +1,10 @@
-local Derivator = {}
+local PathFinder = {}
 
-Derivator.EOL      = setmetatable({}, {__tostring = function() return 'EOL' end})
-Derivator.WILDCARD = "*"
+PathFinder.EOL      = setmetatable({}, {__tostring = function() return 'EOL' end})
+PathFinder.WILDCARD = "*"
 
-local WILDCARD = Derivator.WILDCARD
-local EOL      = Derivator.EOL
+local WILDCARD = PathFinder.WILDCARD
+local EOL      = PathFinder.EOL
 
 local function choose(array, f)
   local result, length = {}, 0
@@ -209,26 +209,26 @@ end
 
 ----------------------
 
-Derivator.new = function(threshold, unmergeable_tokens)
+PathFinder.new = function(threshold, unmergeable_tokens)
   return setmetatable({
     threshold          = threshold          or 1.0,
     unmergeable_tokens = unmergeable_tokens or {},
     histogram          = {},
     root               = {}
   }, {
-    __index = Derivator
+    __index = PathFinder
   })
 end
 
-function Derivator:get_paths()
+function PathFinder:get_paths()
   return sort(get_paths_recursive(self, self.root, ""))
 end
 
-function Derivator:match(path)
+function PathFinder:match(path)
   return choose(self:get_paths(), function(x) return is_path_equivalent(path, x) end)
 end
 
-function Derivator:learn(path)
+function PathFinder:learn(path)
   local matches = self:match(path)
   local length = #matches
 
@@ -253,7 +253,7 @@ function Derivator:learn(path)
   end
 end
 
-function Derivator:unlearn(path)
+function PathFinder:unlearn(path)
   local tokens = tokenize(path)
   local node   = self.root
   local nodes, length  = {}, 0
@@ -276,4 +276,4 @@ function Derivator:unlearn(path)
   return true
 end
 
-return Derivator
+return PathFinder

@@ -1,8 +1,8 @@
-local Derivator = require 'derivator'
-local EOL = Derivator.EOL
+local PathFinder = require 'path_finder'
+local EOL = PathFinder.EOL
 
-local function create_derivator_1()
-  local g = Derivator.new()
+local function create_path_finder_1()
+  local g = PathFinder.new()
 
   g:learn("/users/foo/activate.xml")
   g:learn("/applications/foo/activate.xml")
@@ -30,13 +30,13 @@ local function create_derivator_1()
   return g
 end
 
-describe('Derivator', function()
+describe('PathFinder', function()
 
 
 
   describe(':match', function()
     it('returns a list of the paths that match a given path. The list can be empty', function()
-      local g = create_derivator_1()
+      local g = create_path_finder_1()
       local all_paths = g:get_paths()
 
       assert.same(all_paths, g:match("/*/*/activate.xml"))
@@ -56,7 +56,7 @@ describe('Derivator', function()
 
     it('builds the expected paths', function()
 
-      local g = create_derivator_1()
+      local g = create_path_finder_1()
       local v = g:get_paths()
 
       assert.same(v, {
@@ -70,7 +70,7 @@ describe('Derivator', function()
     end)
 
     it('adds new paths only when they are really new', function()
-      local g = Derivator.new()
+      local g = PathFinder.new()
 
       g:learn("/users/foo/activate.xml")
       assert.same( {"/users/foo/activate.xml"}, g:get_paths())
@@ -141,7 +141,7 @@ describe('Derivator', function()
     end)
 
     it('can handle edge cases', function()
-      local g = Derivator.new()
+      local g = PathFinder.new()
 
       g:learn("/services/foo6/activate.xml")
       g:learn("/services/foo7/activate.xml")
@@ -172,7 +172,7 @@ describe('Derivator', function()
 
     it('understands threshold', function()
 
-      local g = Derivator.new() -- default: threshold = 1
+      local g = PathFinder.new() -- default: threshold = 1
 
       g:learn("/services/foo6/activate.xml")
       g:learn("/services/foo6/deactivate.xml")
@@ -188,7 +188,7 @@ describe('Derivator', function()
       })
 
       -- never merge
-      g = Derivator.new(0.0)
+      g = PathFinder.new(0.0)
 
       g:learn("/services/foo6/activate.xml")
       g:learn("/services/foo6/deactivate.xml")
@@ -206,7 +206,7 @@ describe('Derivator', function()
         "/services/foo8/deactivate.xml"
       })
 
-      g = Derivator.new(0.2)
+      g = PathFinder.new(0.2)
       -- fake the histogram so that the words that are not var are seen more often
       -- the threshold 0.2 means that only merge if word is 5 (=1/0.2) times less frequent
       -- than the most common word
@@ -232,7 +232,7 @@ describe('Derivator', function()
 
   it('understands unmergeable tokens', function()
     -- without unmergeable tokens
-    local g = Derivator.new()
+    local g = PathFinder.new()
 
     g:learn("/services/foo6/activate.xml")
     g:learn("/services/foo6/deactivate.xml")
@@ -252,7 +252,7 @@ describe('Derivator', function()
     })
 
     -- with unmergeable tokens
-    g = Derivator.new(1.0, {"activate", "deactivate"})
+    g = PathFinder.new(1.0, {"activate", "deactivate"})
 
     g:learn("/services/foo6/activate.xml")
     g:learn("/services/foo6/deactivate.xml")
@@ -276,7 +276,7 @@ describe('Derivator', function()
   end)
 
   it('unifies paths', function()
-    local g = Derivator.new()
+    local g = PathFinder.new()
 
     g:learn("/services/foo6/activate.xml")
     g:learn("/services/foo6/deactivate.xml")
@@ -341,7 +341,7 @@ describe('Derivator', function()
   end)
 
   it('compresses paths (again)', function()
-    local g = Derivator.new()
+    local g = PathFinder.new()
 
     g:learn("/admin/api/features.xml")
     g:learn("/admin/api/applications.xml")
@@ -361,7 +361,7 @@ describe('Derivator', function()
 
   it('compresses in even more cases', function()
 
-    local g = Derivator.new()
+    local g = PathFinder.new()
 
     g:learn("/admin/api/features.xml")
     g:learn("/admin/api/applications.xml")
@@ -378,7 +378,7 @@ describe('Derivator', function()
       "/admin/xxx/*.xml"
     }, g:get_paths())
 
-    g = Derivator.new()
+    g = PathFinder.new()
 
     g:learn("/admin/api/features.xml")
     g:learn("/admin/xxx/features.xml")
@@ -402,7 +402,7 @@ describe('Derivator', function()
   describe(':unlearn', function()
     it('unlearns the given path rules', function()
 
-      local g = create_derivator_1()
+      local g = create_path_finder_1()
 
       assert.truthy(g:unlearn("/*/foo5/activate.xml"))
 
@@ -428,7 +428,7 @@ describe('Derivator', function()
     end)
 
     it('handles a regression test that happened in the past', function()
-      local g = Derivator.new()
+      local g = PathFinder.new()
 
       g.root = {
         services = {
