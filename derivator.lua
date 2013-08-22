@@ -176,28 +176,7 @@ local function get_score(self, path)
   return score
 end
 
-----------------------
-
-Derivator.new = function(threshold, unmergeable_tokens)
-  return setmetatable({
-    threshold          = threshold          or 1.0,
-    unmergeable_tokens = unmergeable_tokens or {},
-    histogram          = {},
-    root               = {}
-  }, {
-    __index = Derivator
-  })
-end
-
-function Derivator:get_paths()
-  return sort(get_paths_recursive(self, self.root, ""))
-end
-
-function Derivator:match(path)
-  return choose(self:get_paths(), function(x) return is_path_equivalent(path, x) end)
-end
-
-function Derivator:add(path)
+local function add_path(self, path)
   local tokens    = tokenize(path)
   local node      = self.root
   local histogram = self.histogram
@@ -227,6 +206,29 @@ function Derivator:add(path)
   end
 end
 
+
+----------------------
+
+Derivator.new = function(threshold, unmergeable_tokens)
+  return setmetatable({
+    threshold          = threshold          or 1.0,
+    unmergeable_tokens = unmergeable_tokens or {},
+    histogram          = {},
+    root               = {}
+  }, {
+    __index = Derivator
+  })
+end
+
+function Derivator:get_paths()
+  return sort(get_paths_recursive(self, self.root, ""))
+end
+
+function Derivator:match(path)
+  return choose(self:get_paths(), function(x) return is_path_equivalent(path, x) end)
+end
+
+
 function Derivator:remove(path)
   local tokens = tokenize(path)
   local node   = self.root
@@ -255,7 +257,7 @@ function Derivator:learn(path)
   local length = #matches
 
   if length == 0 then
-    self:add(path)
+    add_path(self, path)
     return true
   elseif length == 1 then
     return false

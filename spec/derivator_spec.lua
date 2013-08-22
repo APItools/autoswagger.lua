@@ -4,118 +4,35 @@ local EOL = Derivator.EOL
 local function create_derivator_1()
   local g = Derivator.new()
 
-  g:add("/users/foo/activate.xml")
-  g:add("/applications/foo/activate.xml")
+  g:learn("/users/foo/activate.xml")
+  g:learn("/applications/foo/activate.xml")
 
-  g:add("/applications/foo2/activate.xml")
-  g:add("/applications/foo3/activate.xml")
+  g:learn("/applications/foo2/activate.xml")
+  g:learn("/applications/foo3/activate.xml")
 
-  g:add("/users/foo4/activate.xml")
-  g:add("/users/foo5/activate.xml")
+  g:learn("/users/foo4/activate.xml")
+  g:learn("/users/foo5/activate.xml")
 
-  g:add("/applications/foo4/activate.xml")
-  g:add("/applications/foo5/activate.xml")
+  g:learn("/applications/foo4/activate.xml")
+  g:learn("/applications/foo5/activate.xml")
 
-  g:add("/services/foo5/activate.xml")
-  g:add("/fulanitos/foo5/activate.xml")
+  g:learn("/services/foo5/activate.xml")
+  g:learn("/fulanitos/foo5/activate.xml")
 
-  g:add("/fulanitos/foo6/activate.xml")
-  g:add("/fulanitos/foo7/activate.xml")
-  g:add("/fulanitos/foo8/activate.xml")
+  g:learn("/fulanitos/foo6/activate.xml")
+  g:learn("/fulanitos/foo7/activate.xml")
+  g:learn("/fulanitos/foo8/activate.xml")
 
-  g:add("/services/foo6/activate.xml")
-  g:add("/services/foo7/activate.xml")
-  g:add("/services/foo8/activate.xml")
+  g:learn("/services/foo6/activate.xml")
+  g:learn("/services/foo7/activate.xml")
+  g:learn("/services/foo8/activate.xml")
 
   return g
 end
 
 describe('Derivator', function()
-  describe(':add', function()
-    it('builds the expected paths', function()
 
-      local g = create_derivator_1()
-      local v = g:get_paths()
 
-      assert.same(v, {
-        "/*/foo/activate.xml",
-        "/*/foo5/activate.xml",
-        "/applications/*/activate.xml",
-        "/fulanitos/*/activate.xml",
-        "/services/*/activate.xml",
-        "/users/*/activate.xml"
-      })
-    end)
-  end)
-
-  describe(':remove', function()
-    it('removes the given path rules', function()
-
-      local g = create_derivator_1()
-
-      assert.truthy(g:remove("/*/foo5/activate.xml"))
-
-      assert.same(g:get_paths(), {
-        "/*/foo/activate.xml",
-        "/applications/*/activate.xml",
-        "/fulanitos/*/activate.xml",
-        "/services/*/activate.xml",
-        "/users/*/activate.xml"
-      })
-
-      assert.truthy(g:remove("/services/*/activate.xml"))
-
-      assert.same(g:get_paths(), {
-        "/*/foo/activate.xml",
-        "/applications/*/activate.xml",
-        "/fulanitos/*/activate.xml",
-        "/users/*/activate.xml"
-      })
-
-      -- remove only works for exact paths, not for matches
-      assert.equals(false, g:remove("/*/*/activate.xml"))
-    end)
-
-    it('handles a regression test that happened in the past', function()
-      local g = Derivator.new()
-
-      g.root = {
-        services = {
-          ["*"]= {
-            activate   = { [".xml"] = {[EOL]={}}},
-            deactivate = { [".xml"] = {[EOL]={}}},
-            suspend    = { [".xml"] = {[EOL]={}}},
-          },
-          foo6 = { ["*"] = {[".xml"] = {[EOL]={}}}},
-          foo7 = { ["*"] = {[".xml"] = {[EOL]={}}}},
-          foo8 = { ["*"] = {[".xml"] = {[EOL]={}}}},
-          foo9 = { ["*"] = {[".xml"] = {[EOL]={}}}}
-        }
-      }
-
-      assert.same(g:get_paths(), {
-        "/services/*/activate.xml",
-        "/services/*/deactivate.xml",
-        "/services/*/suspend.xml",
-        "/services/foo6/*.xml",
-        "/services/foo7/*.xml",
-        "/services/foo8/*.xml",
-        "/services/foo9/*.xml"
-      })
-
-      g:remove("/services/*/activate.xml")
-
-      assert.same(g:get_paths(), {
-        "/services/*/deactivate.xml",
-        "/services/*/suspend.xml",
-        "/services/foo6/*.xml",
-        "/services/foo7/*.xml",
-        "/services/foo8/*.xml",
-        "/services/foo9/*.xml"
-      })
-
-    end)
-  end)
 
   describe(':match', function()
     it('returns a list of the paths that match a given path. The list can be empty', function()
@@ -136,6 +53,22 @@ describe('Derivator', function()
   end)
 
   describe(':learn', function()
+
+    it('builds the expected paths', function()
+
+      local g = create_derivator_1()
+      local v = g:get_paths()
+
+      assert.same(v, {
+        "/*/foo/activate.xml",
+        "/*/foo5/activate.xml",
+        "/applications/*/activate.xml",
+        "/fulanitos/*/activate.xml",
+        "/services/*/activate.xml",
+        "/users/*/activate.xml"
+      })
+    end)
+
     it('adds new paths only when they are really new', function()
       local g = Derivator.new()
 
@@ -301,16 +234,16 @@ describe('Derivator', function()
     -- without unmergeable tokens
     local g = Derivator.new()
 
-    g:add("/services/foo6/activate.xml")
-    g:add("/services/foo6/deactivate.xml")
+    g:learn("/services/foo6/activate.xml")
+    g:learn("/services/foo6/deactivate.xml")
 
     assert.same( g:get_paths(), { "/services/foo6/*.xml" })
 
-    g:add("/services/foo7/activate.xml")
-    g:add("/services/foo7/deactivate.xml")
+    g:learn("/services/foo7/activate.xml")
+    g:learn("/services/foo7/deactivate.xml")
 
-    g:add("/services/foo8/activate.xml")
-    g:add("/services/foo8/deactivate.xml")
+    g:learn("/services/foo8/activate.xml")
+    g:learn("/services/foo8/deactivate.xml")
 
     assert.same( g:get_paths(), {
       "/services/foo6/*.xml",
@@ -321,19 +254,19 @@ describe('Derivator', function()
     -- with unmergeable tokens
     g = Derivator.new(1.0, {"activate", "deactivate"})
 
-    g:add("/services/foo6/activate.xml")
-    g:add("/services/foo6/deactivate.xml")
+    g:learn("/services/foo6/activate.xml")
+    g:learn("/services/foo6/deactivate.xml")
 
     assert.same( g:get_paths(), {
       "/services/foo6/activate.xml",
       "/services/foo6/deactivate.xml"
     })
 
-    g:add("/services/foo7/activate.xml")
-    g:add("/services/foo7/deactivate.xml")
+    g:learn("/services/foo7/activate.xml")
+    g:learn("/services/foo7/deactivate.xml")
 
-    g:add("/services/foo8/activate.xml")
-    g:add("/services/foo8/deactivate.xml")
+    g:learn("/services/foo8/activate.xml")
+    g:learn("/services/foo8/deactivate.xml")
 
     assert.same( g:get_paths(), {
       "/services/*/activate.xml",
@@ -464,6 +397,75 @@ describe('Derivator', function()
       "/admin/*/users.xml"
     }, g:get_paths())
 
+  end)
+
+  describe(':remove', function()
+    it('removes the given path rules', function()
+
+      local g = create_derivator_1()
+
+      assert.truthy(g:remove("/*/foo5/activate.xml"))
+
+      assert.same(g:get_paths(), {
+        "/*/foo/activate.xml",
+        "/applications/*/activate.xml",
+        "/fulanitos/*/activate.xml",
+        "/services/*/activate.xml",
+        "/users/*/activate.xml"
+      })
+
+      assert.truthy(g:remove("/services/*/activate.xml"))
+
+      assert.same(g:get_paths(), {
+        "/*/foo/activate.xml",
+        "/applications/*/activate.xml",
+        "/fulanitos/*/activate.xml",
+        "/users/*/activate.xml"
+      })
+
+      -- remove only works for exact paths, not for matches
+      assert.equals(false, g:remove("/*/*/activate.xml"))
+    end)
+
+    it('handles a regression test that happened in the past', function()
+      local g = Derivator.new()
+
+      g.root = {
+        services = {
+          ["*"]= {
+            activate   = { [".xml"] = {[EOL]={}}},
+            deactivate = { [".xml"] = {[EOL]={}}},
+            suspend    = { [".xml"] = {[EOL]={}}},
+          },
+          foo6 = { ["*"] = {[".xml"] = {[EOL]={}}}},
+          foo7 = { ["*"] = {[".xml"] = {[EOL]={}}}},
+          foo8 = { ["*"] = {[".xml"] = {[EOL]={}}}},
+          foo9 = { ["*"] = {[".xml"] = {[EOL]={}}}}
+        }
+      }
+
+      assert.same(g:get_paths(), {
+        "/services/*/activate.xml",
+        "/services/*/deactivate.xml",
+        "/services/*/suspend.xml",
+        "/services/foo6/*.xml",
+        "/services/foo7/*.xml",
+        "/services/foo8/*.xml",
+        "/services/foo9/*.xml"
+      })
+
+      g:remove("/services/*/activate.xml")
+
+      assert.same(g:get_paths(), {
+        "/services/*/deactivate.xml",
+        "/services/*/suspend.xml",
+        "/services/foo6/*.xml",
+        "/services/foo7/*.xml",
+        "/services/foo8/*.xml",
+        "/services/foo9/*.xml"
+      })
+
+    end)
   end)
 
 end)
