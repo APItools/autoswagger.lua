@@ -129,9 +129,12 @@ end
 
 ----------------------
 
-local function is_mergeable(self, token1, token2)
+local function is_mergeable(self, hostname, token1, token2)
+  local score = self.scores[hostname]
+
+  if not score or
   -- unmergeables
-  if includes(self.unmergeable_tokens, token1) or
+     includes(self.unmergeable_tokens, token1) or
      includes(self.unmergeable_tokens, token2) or
   -- formats
      begins_with(token1, '.') or
@@ -139,10 +142,10 @@ local function is_mergeable(self, token1, token2)
     return false
   end
 
-  local score1 = self.histogram[token1] or 0
-  local score2 = self.histogram[token2] or 0
+  local score1 = score[token1] or 0
+  local score2 = score[token2] or 0
 
-  local max = get_max(self.histogram, 0)
+  local max = get_max(score, 0)
 
   if max > 0 then
     score1 = score1 / max
@@ -156,39 +159,47 @@ local function is_mergeable(self, token1, token2)
          score2 <= self.threshold
 end
 
-local function find_mergeable_sibling(self, node, current_token, next_token)
+local function find_mergeable_sibling(self, hostname, node, current_token, next_token)
   if not next_token then return nil end
   for sibling, nephews in pairs(node) do
     for token,_ in pairs(nephews) do
-      if token == next_token and is_mergeable(self, sibling, current_token) then
+      if token == next_token and is_mergeable(self, hostname, sibling, current_token) then
         return sibling
       end
     end
   end
 end
 
-local function get_score(self, path)
+local function get_path_score(self, hostname, path)
   local tokens = tokenize(path)
-  local score = 0
+  local score = self.scores[hostname]
+
+  if not score then return 0 end
+
+  local result = 0
   for i=0, #tokens do
-    score = score + (self.histogram[tokens[i]] or 0)
+    result = result + (score[tokens[i]] or 0)
   end
-  return score
+  return result
 end
 
-local function add_path(self, path)
-  local tokens    = tokenize(path)
-  local node      = self.root
-  local histogram = self.histogram
+local function add_path(self, hostname, path)
+  self.scores[hostname] = self.scores[hostname] or {}
+  self.roots[hostname]  = self.roots[hostname]  or {}
+
+  local score  = self.scores[hostname]
+  local node   = self.roots[hostname]
+
+  local tokens = tokenize(path)
 
   for i=1, #tokens do
     local token = tokens[i]
     if token ~= EOL then
-      histogram[token] = (histogram[token] or 0) + 1
+      score[token] = (score[token] or 0) + 1
     end
 
     if not node[token] then
-      local sibling = find_mergeable_sibling(self, node, token, tokens[i+1])
+      local sibling = find_mergeable_sibling(self, hostname, node, token, tokens[i+1])
 
       if sibling then
         if sibling ~= WILDCARD then
@@ -213,27 +224,29 @@ Parser.new = function(threshold, unmergeable_tokens)
   return setmetatable({
     threshold          = threshold          or 1.0,
     unmergeable_tokens = unmergeable_tokens or {},
-    histogram          = {},
-    root               = {}
+    scores             = {},
+    roots              = {}
   }, {
     __index = Parser
   })
 end
 
-function Parser:get_paths()
-  return sort(get_paths_recursive(self, self.root, ""))
+function Parser:get_paths(hostname)
+  local root = self.roots[hostname]
+  if not root then return {} end
+  return sort(get_paths_recursive(self, root, ""))
 end
 
-function Parser:match(path)
-  return choose(self:get_paths(), function(x) return is_path_equivalent(path, x) end)
+function Parser:match(hostname, path)
+  return choose(self:get_paths(hostname), function(x) return is_path_equivalent(path, x) end)
 end
 
-function Parser:learn(path)
-  local matches = self:match(path)
-  local length = #matches
+function Parser:learn(hostname, path)
+  local paths = self:match(hostname, path)
+  local length = #paths
 
   if length == 0 then
-    add_path(self, path)
+    add_path(self, hostname, path)
     return true
   elseif length == 1 then
     return false
@@ -241,21 +254,23 @@ function Parser:learn(path)
     local min = math.huge
     local min_path
     for i=1,length do
-      local score = get_score(self, matches[i])
+      local score = get_path_score(self, hostname, paths[i])
       if score < min then
         min = score
-        min_path = matches[i]
+        min_path = paths[i]
       end
     end
 
-    self:unlearn(min_path)
+    self:unlearn(hostname, min_path)
     return true
   end
 end
 
-function Parser:unlearn(path)
+function Parser:unlearn(hostname, path)
   local tokens = tokenize(path)
-  local node   = self.root
+  local node   = self.roots[hostname]
+  if not node then return false end
+
   local nodes, length  = {}, 0
 
   for i=1,#tokens do
@@ -266,9 +281,9 @@ function Parser:unlearn(path)
   end
 
   for i=length, 1, -1 do
-    for word,children in pairs(nodes[i]) do
+    for token,children in pairs(nodes[i]) do
       if is_empty(children) then
-        nodes[i][word] = nil
+        nodes[i][token] = nil
       end
     end
   end
