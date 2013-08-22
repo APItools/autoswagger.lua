@@ -130,9 +130,9 @@ end
 ----------------------
 
 local function is_mergeable(self, hostname, token1, token2)
-  local score = self.scores[hostname]
+  local host = self.hosts[hostname]
 
-  if not score or
+  if not host or
   -- unmergeables
      includes(self.unmergeable_tokens, token1) or
      includes(self.unmergeable_tokens, token2) or
@@ -141,6 +141,8 @@ local function is_mergeable(self, hostname, token1, token2)
      begins_with(token2, '.') then
     return false
   end
+
+  local score = host.score
 
   local score1 = score[token1] or 0
   local score2 = score[token2] or 0
@@ -172,9 +174,10 @@ end
 
 local function get_path_score(self, hostname, path)
   local tokens = tokenize(path)
-  local score = self.scores[hostname]
+  local host = self.hosts[hostname]
+  if not host then return 0 end
 
-  if not score then return 0 end
+  local score = host.score
 
   local result = 0
   for i=0, #tokens do
@@ -184,11 +187,11 @@ local function get_path_score(self, hostname, path)
 end
 
 local function add_path(self, hostname, path)
-  self.scores[hostname] = self.scores[hostname] or {}
-  self.roots[hostname]  = self.roots[hostname]  or {}
+  self.hosts[hostname] = self.hosts[hostname] or {score={}, root={}}
+  local host = self.hosts[hostname]
 
-  local score  = self.scores[hostname]
-  local node   = self.roots[hostname]
+  local score  = host.score
+  local node   = host.root
 
   local tokens = tokenize(path)
 
@@ -224,17 +227,16 @@ Parser.new = function(threshold, unmergeable_tokens)
   return setmetatable({
     threshold          = threshold          or 1.0,
     unmergeable_tokens = unmergeable_tokens or {},
-    scores             = {},
-    roots              = {}
+    hosts = {}
   }, {
     __index = Parser
   })
 end
 
 function Parser:get_paths(hostname)
-  local root = self.roots[hostname]
-  if not root then return {} end
-  return sort(get_paths_recursive(self, root, ""))
+  local host = self.hosts[hostname]
+  if not host then return {} end
+  return sort(get_paths_recursive(self, host.root, ""))
 end
 
 function Parser:match(hostname, path)
@@ -267,9 +269,11 @@ function Parser:learn(hostname, path)
 end
 
 function Parser:unlearn(hostname, path)
+  local host = self.hosts[hostname]
+  if not host then return false end
+
   local tokens = tokenize(path)
-  local node   = self.roots[hostname]
-  if not node then return false end
+  local node   = host.root
 
   local nodes, length  = {}, 0
 

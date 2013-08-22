@@ -210,10 +210,13 @@ describe('Parser', function()
       -- fake the score so that the words that are not var are seen more often
       -- the threshold 0.2 means that only merge if word is 5 (=1/0.2) times less frequent
       -- than the most common word
-      g.scores = {
+      g.hosts = {
         ['google.com'] = {
-          services = 20, activate = 10, deactivate = 10,
-          foo6 = 1, foo7 = 1, foo8 = 1
+          root = {},
+          score = {
+            services = 20, activate = 10, deactivate = 10,
+            foo6 = 1, foo7 = 1, foo8 = 1
+          }
         }
       }
 
@@ -432,19 +435,22 @@ describe('Parser', function()
     it('handles a regression test that happened in the past', function()
       local g = Parser.new()
 
-      g.roots = {
+      g.hosts = {
         ['google.com'] = {
-          services = {
-            ["*"]= {
-              activate   = { [".xml"] = {[EOL]={}}},
-              deactivate = { [".xml"] = {[EOL]={}}},
-              suspend    = { [".xml"] = {[EOL]={}}},
-            },
-            foo6 = { ["*"] = {[".xml"] = {[EOL]={}}}},
-            foo7 = { ["*"] = {[".xml"] = {[EOL]={}}}},
-            foo8 = { ["*"] = {[".xml"] = {[EOL]={}}}},
-            foo9 = { ["*"] = {[".xml"] = {[EOL]={}}}}
-          }
+          root = {
+            services = {
+              ["*"]= {
+                activate   = { [".xml"] = {[EOL]={}}},
+                deactivate = { [".xml"] = {[EOL]={}}},
+                suspend    = { [".xml"] = {[EOL]={}}},
+              },
+              foo6 = { ["*"] = {[".xml"] = {[EOL]={}}}},
+              foo7 = { ["*"] = {[".xml"] = {[EOL]={}}}},
+              foo8 = { ["*"] = {[".xml"] = {[EOL]={}}}},
+              foo9 = { ["*"] = {[".xml"] = {[EOL]={}}}}
+            }
+          },
+          score = {},
         }
       }
 
