@@ -118,7 +118,7 @@ describe('Derivator', function()
   end)
 
   describe(':match', function()
-    it('matchs paths', function()
+    it('returns a list of the paths that match a given path. The list can be empty', function()
       local g = create_derivator_1()
       local all_paths = g:get_paths()
 
@@ -424,6 +424,46 @@ describe('Derivator', function()
       "/admin/api/*.xml",
       "/admin/xxx/*.xml"
     }, g:get_paths())
+  end)
+
+  it('compresses in even more cases', function()
+
+    local g = Derivator.new()
+
+    g:learn("/admin/api/features.xml")
+    g:learn("/admin/api/applications.xml")
+    g:learn("/admin/api/users.xml")
+
+    assert.same( { "/admin/api/*.xml" }, g:get_paths())
+
+    g:learn("/admin/xxx/features.xml")
+    g:learn("/admin/xxx/applications.xml")
+    g:learn("/admin/xxx/users.xml")
+
+    assert.same( {
+      "/admin/api/*.xml",
+      "/admin/xxx/*.xml"
+    }, g:get_paths())
+
+    g = Derivator.new()
+
+    g:learn("/admin/api/features.xml")
+    g:learn("/admin/xxx/features.xml")
+
+    assert.same( { "/admin/*/features.xml" }, g:get_paths())
+
+    g:learn("/admin/api/applications.xml")
+    g:learn("/admin/xxx/applications.xml")
+
+    g:learn("/admin/api/users.xml")
+    g:learn("/admin/xxx/users.xml")
+
+    assert.same( {
+      "/admin/*/applications.xml",
+      "/admin/*/features.xml",
+      "/admin/*/users.xml"
+    }, g:get_paths())
+
   end)
 
 end)
