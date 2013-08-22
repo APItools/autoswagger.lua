@@ -407,4 +407,23 @@ describe('Derivator', function()
 
   end)
 
+  it('compresses paths (again)', function()
+    local g = Derivator.new()
+
+    g:learn("/admin/api/features.xml")
+    g:learn("/admin/api/applications.xml")
+    g:learn("/admin/api/users.xml")
+
+    assert.same( { "/admin/api/*.xml" }, g:get_paths())
+
+    g:learn("/admin/xxx/features.xml")
+    g:learn("/admin/xxx/applications.xml")
+    g:learn("/admin/xxx/users.xml")
+
+    assert.same( {
+      "/admin/api/*.xml",
+      "/admin/xxx/*.xml"
+    }, g:get_paths())
+  end)
+
 end)
