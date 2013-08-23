@@ -1,10 +1,7 @@
+
+local EOL      = setmetatable({}, {__tostring = function() return 'EOL' end})
+local WILDCARD = "*"
 local Parser = {}
-
-Parser.EOL      = setmetatable({}, {__tostring = function() return 'EOL' end})
-Parser.WILDCARD = "*"
-
-local WILDCARD = Parser.WILDCARD
-local EOL      = Parser.EOL
 
 local function choose(array, f)
   local result, length = {}, 0
@@ -326,4 +323,9 @@ function Parser:unlearn(hostname, path)
   return true
 end
 
-return Parser
+local autoswagger = {
+  EOL = EOL,
+  Parser = Parser
+}
+
+return autoswagger

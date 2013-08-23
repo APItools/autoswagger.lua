@@ -1,5 +1,7 @@
-local Parser = require 'parser'
-local EOL = Parser.EOL
+
+local as = require('autoswagger')
+local Parser = as.Parser
+local EOL    = as.EOL
 
 local function create_path_finder_1()
   local g = Parser.new()
