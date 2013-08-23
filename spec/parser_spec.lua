@@ -1,4 +1,3 @@
-
 local as = require('autoswagger')
 local Parser = as.Parser
 local EOL    = as.EOL
