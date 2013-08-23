@@ -113,6 +113,23 @@ local function tokenize(path)
   return tokens
 end
 
+local function untokenize(tokens)
+  local buffer = {}
+  local length = #tokens
+  local extension = tokens[length - 1]
+  if length > 2 and begins_with(extension, '.') then
+    for i=1,length - 2 do
+      buffer[i] = tokens[i]
+    end
+    buffer[length - 2] = buffer[length - 2] .. extension
+  else
+    for i=1,length - 1 do
+      buffer[i] = tokens[i]
+    end
+  end
+  return table.concat(buffer, '/')
+end
+
 local function is_path_equivalent(path1, path2)
   path1 = tokenize(path1)
   path2 = tokenize(path2)
@@ -187,13 +204,14 @@ local function get_path_score(self, hostname, path)
 end
 
 local function add_path(self, hostname, path)
-  self.hosts[hostname] = self.hosts[hostname] or {score={}, root={}, api={}}
+  self.hosts[hostname] = self.hosts[hostname] or {score={}, root={}, apis={}}
   local host = self.hosts[hostname]
 
   local score  = host.score
   local node   = host.root
 
   local tokens = tokenize(path)
+  local api_tokens, length = {}, 0
 
   for i=1, #tokens do
     local token = tokens[i]
@@ -215,6 +233,9 @@ local function add_path(self, hostname, path)
         node[token] = {}
       end
     end
+
+    length = length + 1
+    api_tokens[length] = token
 
     node = node[token]
   end
@@ -275,6 +296,7 @@ function Parser:learn(hostname, path)
     end
 
     increase_path_score(self, hostname, max_path)
+    -- removes one path
     self:unlearn(hostname, min_path)
     return false
   end
@@ -299,6 +321,10 @@ function Parser:unlearn(hostname, path)
   for i=length, 1, -1 do
     for token,children in pairs(nodes[i]) do
       if is_empty(children) then
+        local buffer = {}
+        for j=1, i do
+          buffer[#buffer+1] = tokens[j]
+        end
         nodes[i][token] = nil
       end
     end
