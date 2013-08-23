@@ -113,23 +113,6 @@ local function tokenize(path)
   return tokens
 end
 
-local function untokenize(tokens)
-  local buffer = {}
-  local length = #tokens
-  local extension = tokens[length - 1]
-  if length > 2 and begins_with(extension, '.') then
-    for i=1,length - 2 do
-      buffer[i] = tokens[i]
-    end
-    buffer[length - 2] = buffer[length - 2] .. extension
-  else
-    for i=1,length - 1 do
-      buffer[i] = tokens[i]
-    end
-  end
-  return table.concat(buffer, '/')
-end
-
 local function is_path_equivalent(path1, path2)
   path1 = tokenize(path1)
   path2 = tokenize(path2)
@@ -211,7 +194,6 @@ local function add_path(self, hostname, path)
   local node   = host.root
 
   local tokens = tokenize(path)
-  local api_tokens, length = {}, 0
 
   for i=1, #tokens do
     local token = tokens[i]
@@ -234,9 +216,6 @@ local function add_path(self, hostname, path)
       end
     end
 
-    length = length + 1
-    api_tokens[length] = token
-
     node = node[token]
   end
 end
@@ -245,6 +224,20 @@ local function increase_path_score(self, hostname, path)
   local score = self.hosts[hostname].score
   for _,token in ipairs(tokenize(path)) do
     score[token] = (score[token] or 0) + 1
+  end
+end
+
+local function refresh_apis(self, hostname)
+  local host = self.hosts[hostname]
+  if not host then return end
+  local valid_paths = self:get_paths(hostname)
+  for endpoint, _ in pairs(host.apis) do
+    if not includes(valid_paths, endpoint) then
+      host.apis[endpoint] = nil
+    end
+  end
+  for _,path in ipairs(valid_paths) do
+    host.apis[path] = host.apis[path] or {}
   end
 end
 
@@ -276,7 +269,7 @@ function Parser:learn(hostname, path)
 
   if length == 0 then
     add_path(self, hostname, path)
-    return true
+    refresh_apis(self, hostname)
   elseif length == 1 then
     increase_path_score(self, hostname, paths[1])
     return true
@@ -298,7 +291,7 @@ function Parser:learn(hostname, path)
     increase_path_score(self, hostname, max_path)
     -- removes one path
     self:unlearn(hostname, min_path)
-    return false
+    refresh_apis(self, hostname)
   end
 end
 

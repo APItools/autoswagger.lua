@@ -212,6 +212,7 @@ describe('Parser', function()
       -- than the most common word
       g.hosts = {
         ['google.com'] = {
+          apis = {},
           root = {},
           score = {
             services = 20, activate = 10, deactivate = 10,
@@ -451,6 +452,7 @@ describe('Parser', function()
             }
           },
           score = {},
+          apis = {}
         }
       }
 
