@@ -33,26 +33,6 @@ end
 
 describe('Parser', function()
 
-
-
-  describe(':match', function()
-    it('returns a list of the paths that match a given path. The list can be empty', function()
-      local g = create_path_finder_1()
-      local all_paths = g:get_paths('google.com')
-
-      assert.same(all_paths, g:match("google.com","/*/*/activate.xml"))
-      assert.same(all_paths, g:match("google.com","/*/*/*.xml"))
-
-      assert.same({"/fulanitos/*/activate.xml"}, g:match("google.com","/fulanitos/whatever/activate.xml"))
-      assert.same({"/*/foo/activate.xml"}, g:match("google.com","/whatever/foo/activate.xml"))
-      assert.same({"/*/foo5/activate.xml"}, g:match("google.com","/whatever/foo5/activate.xml"))
-
-      assert.same({}, g:match("google.com","/"))
-      assert.same({}, g:match("google.com","/*/*/activate.xml.whatever"))
-      assert.same({}, g:match("google.com","/whatever/foo_not_there/activate.xml"))
-    end)
-  end)
-
   describe(':learn', function()
 
     it('builds the expected paths', function()
@@ -126,19 +106,6 @@ describe('Parser', function()
       g:learn("google.com","/services/bar6/activate.xml")
       g:learn("google.com","/services/bar7/activate.xml")
       g:learn("google.com","/services/bar8/activate.xml")
-
-
-      assert.same( g:get_paths('google.com'), {
-        "/applications/*/activate.xml",
-        "/fulanitos/*/activate.xml",
-        "/services/*/activate.xml",
-        "/users/*/activate.xml"
-      })
-
-      assert.same( {"/services/*/activate.xml"}, g:match("google.com","/services/foo8/activate.xml"))
-      assert.same( {"/services/*/activate.xml"}, g:match("google.com","/services/foo18/activate.xml"))
-      assert.same( {}, g:match("google.com","/services/foo8/activate.json"))
-      assert.same( {}, g:match("google.com","/ser/foo8/activate.xml"))
     end)
 
     it('can handle edge cases', function()
@@ -170,116 +137,6 @@ describe('Parser', function()
       })
 
     end)
-
-    it('understands threshold', function()
-
-      local g = Parser.new() -- default: threshold = 1
-
-      g:learn("google.com","/services/foo6/activate.xml")
-      g:learn("google.com","/services/foo6/deactivate.xml")
-      g:learn("google.com","/services/foo7/activate.xml")
-      g:learn("google.com","/services/foo7/deactivate.xml")
-      g:learn("google.com","/services/foo8/activate.xml")
-      g:learn("google.com","/services/foo8/deactivate.xml")
-
-      assert.same( g:get_paths('google.com'), {
-        "/services/foo6/*.xml",
-        "/services/foo7/*.xml",
-        "/services/foo8/*.xml"
-      })
-
-      -- never merge
-      g = Parser.new(0.0)
-
-      g:learn("google.com","/services/foo6/activate.xml")
-      g:learn("google.com","/services/foo6/deactivate.xml")
-      g:learn("google.com","/services/foo7/activate.xml")
-      g:learn("google.com","/services/foo7/deactivate.xml")
-      g:learn("google.com","/services/foo8/activate.xml")
-      g:learn("google.com","/services/foo8/deactivate.xml")
-
-      assert.same( g:get_paths('google.com'), {
-        "/services/foo6/activate.xml",
-        "/services/foo6/deactivate.xml",
-        "/services/foo7/activate.xml",
-        "/services/foo7/deactivate.xml",
-        "/services/foo8/activate.xml",
-        "/services/foo8/deactivate.xml"
-      })
-
-      g = Parser.new(0.2)
-      -- fake the score so that the words that are not var are seen more often
-      -- the threshold 0.2 means that only merge if word is 5 (=1/0.2) times less frequent
-      -- than the most common word
-      g.hosts = {
-        ['google.com'] = {
-          apis = {},
-          root = {},
-          score = {
-            services = 20, activate = 10, deactivate = 10,
-            foo6 = 1, foo7 = 1, foo8 = 1
-          }
-        }
-      }
-
-      g:learn("google.com","/services/foo6/activate.xml")
-      g:learn("google.com","/services/foo6/deactivate.xml")
-      g:learn("google.com","/services/foo7/activate.xml")
-      g:learn("google.com","/services/foo7/deactivate.xml")
-      g:learn("google.com","/services/foo8/activate.xml")
-      g:learn("google.com","/services/foo8/deactivate.xml")
-
-      assert.same( g:get_paths('google.com'), {
-        "/services/*/activate.xml",
-        "/services/*/deactivate.xml"
-      })
-    end)
-
-  end)
-
-  it('understands unmergeable tokens', function()
-    -- without unmergeable tokens
-    local g = Parser.new()
-
-    g:learn("google.com","/services/foo6/activate.xml")
-    g:learn("google.com","/services/foo6/deactivate.xml")
-
-    assert.same( g:get_paths('google.com'), { "/services/foo6/*.xml" })
-
-    g:learn("google.com","/services/foo7/activate.xml")
-    g:learn("google.com","/services/foo7/deactivate.xml")
-
-    g:learn("google.com","/services/foo8/activate.xml")
-    g:learn("google.com","/services/foo8/deactivate.xml")
-
-    assert.same( g:get_paths('google.com'), {
-      "/services/foo6/*.xml",
-      "/services/foo7/*.xml",
-      "/services/foo8/*.xml"
-    })
-
-    -- with unmergeable tokens
-    g = Parser.new(1.0, {"activate", "deactivate"})
-
-    g:learn("google.com","/services/foo6/activate.xml")
-    g:learn("google.com","/services/foo6/deactivate.xml")
-
-    assert.same( g:get_paths('google.com'), {
-      "/services/foo6/activate.xml",
-      "/services/foo6/deactivate.xml"
-    })
-
-    g:learn("google.com","/services/foo7/activate.xml")
-    g:learn("google.com","/services/foo7/deactivate.xml")
-
-    g:learn("google.com","/services/foo8/activate.xml")
-    g:learn("google.com","/services/foo8/deactivate.xml")
-
-    assert.same( g:get_paths('google.com'), {
-      "/services/*/activate.xml",
-      "/services/*/deactivate.xml"
-    })
-
   end)
 
   it('unifies paths', function()
@@ -404,81 +261,6 @@ describe('Parser', function()
       "/admin/*/users.xml"
     }, g:get_paths('google.com'))
 
-  end)
-
-  describe(':unlearn', function()
-    it('unlearns the given path rules', function()
-
-      local g = create_path_finder_1()
-
-      assert.truthy(g:unlearn('google.com', "/*/foo5/activate.xml"))
-
-      assert.same(g:get_paths('google.com'), {
-        "/*/foo/activate.xml",
-        "/applications/*/activate.xml",
-        "/fulanitos/*/activate.xml",
-        "/services/*/activate.xml",
-        "/users/*/activate.xml"
-      })
-
-      assert.truthy(g:unlearn('google.com', "/services/*/activate.xml"))
-
-      assert.same(g:get_paths('google.com'), {
-        "/*/foo/activate.xml",
-        "/applications/*/activate.xml",
-        "/fulanitos/*/activate.xml",
-        "/users/*/activate.xml"
-      })
-
-      -- unlearn only works for exact paths, not for matches
-      assert.equals(false, g:unlearn('google.com', "/*/*/activate.xml"))
-    end)
-
-    it('handles a regression test that happened in the past', function()
-      local g = Parser.new()
-
-      g.hosts = {
-        ['google.com'] = {
-          root = {
-            services = {
-              ["*"]= {
-                activate   = { [".xml"] = {[EOL]={}}},
-                deactivate = { [".xml"] = {[EOL]={}}},
-                suspend    = { [".xml"] = {[EOL]={}}},
-              },
-              foo6 = { ["*"] = {[".xml"] = {[EOL]={}}}},
-              foo7 = { ["*"] = {[".xml"] = {[EOL]={}}}},
-              foo8 = { ["*"] = {[".xml"] = {[EOL]={}}}},
-              foo9 = { ["*"] = {[".xml"] = {[EOL]={}}}}
-            }
-          },
-          score = {},
-          apis = {}
-        }
-      }
-
-      assert.same(g:get_paths('google.com'), {
-        "/services/*/activate.xml",
-        "/services/*/deactivate.xml",
-        "/services/*/suspend.xml",
-        "/services/foo6/*.xml",
-        "/services/foo7/*.xml",
-        "/services/foo8/*.xml",
-        "/services/foo9/*.xml"
-      })
-
-      g:unlearn('google.com', "/services/*/activate.xml")
-
-      assert.same(g:get_paths('google.com'), {
-        "/services/*/deactivate.xml",
-        "/services/*/suspend.xml",
-        "/services/foo6/*.xml",
-        "/services/foo7/*.xml",
-        "/services/foo8/*.xml",
-        "/services/foo9/*.xml"
-      })
-
-    end)
   end)
 
 end)
