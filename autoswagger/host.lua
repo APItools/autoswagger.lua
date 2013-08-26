@@ -3,6 +3,7 @@ local PATH = (...):match("(.+%.)[^%.]+$") or ""
 local array   = require(PATH .. 'array')
 local straux  = require(PATH .. 'straux')
 local base    = require(PATH .. 'base')
+local API     = require(PATH .. 'api')
 
 local EOL      = base.EOL
 local WILDCARD = base.WILDCARD
@@ -125,7 +126,7 @@ local function refresh_apis(self)
     end
   end
   for _,path in ipairs(valid_paths) do
-    self.apis[path] = self.apis[path] or {}
+    self.apis[path] = self.apis[path] or API.new(path)
   end
 end
 
@@ -229,6 +230,11 @@ function Host:unlearn(path)
   end
 
   return true
+end
+
+function Host:get_spec()
+  local spec = {}
+  return spec
 end
 
 
