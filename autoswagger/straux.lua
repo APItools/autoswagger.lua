@@ -92,12 +92,17 @@ local function parse_query(str)
   return result
 end
 
+local make_id = function(str)
+  return tostring(str) .. "_id"
+end
+
 local straux = {
   split               = split,
   begins_with         = begins_with,
   tokenize            = tokenize,
   is_path_equivalent  = is_path_equivalent,
-  parse_query         = parse_query
+  parse_query         = parse_query,
+  make_id             = make_id
 }
 
 return straux
