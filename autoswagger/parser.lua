@@ -27,7 +27,7 @@ function Parser:get_paths(hostname)
   return host and host:get_paths() or {}
 end
 
-function Parser:learn(method, hostname, path, query, headers, body, status)
+function Parser:learn(method, hostname, path, query, body, headers)
   self:newHost(hostname):learn(method, path)
 end
 

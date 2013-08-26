@@ -6,18 +6,18 @@ local base    = require(PATH .. 'base')
 local EOL      = base.EOL
 local WILDCARD = base.WILDCARD
 
-local API = {}
+local Endpoint = {}
 
-function API.new(endpoint)
+function Endpoint.new(endpoint)
   return setmetatable({
     endpoint = endpoint,
     tokens = straux.tokenize(endpoint)
   }, {
-    __index = API
+    __index = Endpoint
   })
 end
 
-function API:parse_path_params(path)
+function Endpoint:parse_path_params(path)
   local tokens = straux.tokenize(path)
 
   local result = {}
@@ -33,4 +33,7 @@ function API:parse_path_params(path)
   return result
 end
 
-return API
+function Endpoint:add_parameter_info(path, query, body, headers)
+end
+
+return Endpoint

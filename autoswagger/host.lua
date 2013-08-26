@@ -1,9 +1,9 @@
 local PATH = (...):match("(.+%.)[^%.]+$") or ""
 
-local array   = require(PATH .. 'array')
-local straux  = require(PATH .. 'straux')
-local base    = require(PATH .. 'base')
-local API     = require(PATH .. 'api')
+local array     = require(PATH .. 'array')
+local straux    = require(PATH .. 'straux')
+local base      = require(PATH .. 'base')
+local Endpoint  = require(PATH .. 'endpoint')
 
 local EOL      = base.EOL
 local WILDCARD = base.WILDCARD
@@ -80,7 +80,19 @@ local function get_path_score(self, path)
   return result
 end
 
-local function add_path(self, path)
+local function refresh_endpoints(self)
+  local valid_paths = self:get_paths()
+  for endpoint, _ in pairs(self.endpoints) do
+    if not array.includes(valid_paths, endpoint) then
+      self.endpoints[endpoint] = nil
+    end
+  end
+  for _,path in ipairs(valid_paths) do
+    self.endpoints[path] = self.endpoints[path] or Endpoint.new(path)
+  end
+end
+
+local function insert_path(self, path)
   local score  = self.score
   local node   = self.root
 
@@ -118,66 +130,13 @@ local function increase_path_score(self, path)
   end
 end
 
-local function refresh_apis(self)
-  local valid_paths = self:get_paths()
-  for endpoint, _ in pairs(self.apis) do
-    if not array.includes(valid_paths, endpoint) then
-      self.apis[endpoint] = nil
-    end
-  end
-  for _,path in ipairs(valid_paths) do
-    self.apis[path] = self.apis[path] or API.new(path)
-  end
-end
-
-local function get_paths_recursive(self, node, prefix)
-  local result = {}
-  for token, children in pairs(node) do
-    if token == EOL then
-      result[#result + 1] = prefix
-    else
-      local separator = straux.begins_with(token, '.') and "" or "/"
-      array.append(result, get_paths_recursive(self, children, prefix .. separator .. token))
-    end
-  end
-  return result
-end
-
-----------------------------------------
-
-local Host = {}
-
-Host.new = function(hostname, threshold, unmergeable_tokens)
-  return setmetatable({
-    threshold           = threshold          or 1.0,
-    unmergeable_tokens  = unmergeable_tokens or {},
-    hostname            = hostname,
-    root                = {},
-    score               = {},
-    apis                = {}
-  }, {
-    __index = Host
-  })
-end
-
-function Host:match(path)
-  return array.choose(self:get_paths(), function(x)
-    return straux.is_path_equivalent(path, x)
-  end)
-end
-
-function Host:get_paths()
-  return array.sort(get_paths_recursive(self, self.root, ""))
-end
-
-
-function Host:learn(method, path, query, headers, body, status)
+local function add_path(self, path)
   local paths = self:match(path)
   local length = #paths
 
   if length == 0 then
-    add_path(self, path)
-    refresh_apis(self)
+    insert_path(self, path)
+    refresh_endpoints(self)
   elseif length == 1 then
     increase_path_score(self, paths[1])
     return true
@@ -199,8 +158,62 @@ function Host:learn(method, path, query, headers, body, status)
     increase_path_score(self, max_path)
     -- removes one path
     self:unlearn(min_path)
-    refresh_apis(self)
+    refresh_endpoints(self)
   end
+end
+
+
+local function get_paths_recursive(self, node, prefix)
+  local result = {}
+  for token, children in pairs(node) do
+    if token == EOL then
+      result[#result + 1] = prefix
+    else
+      local separator = straux.begins_with(token, '.') and "" or "/"
+      array.append(result, get_paths_recursive(self, children, prefix .. separator .. token))
+    end
+  end
+  return result
+end
+
+local function find_matching_endpoint(self, path)
+  for endpoint_path, endpoint in pairs(self.endpoints) do
+    if straux.is_path_equivalent(path, endpoint_path) then return endpoint end
+  end
+end
+
+----------------------------------------
+
+local Host = {}
+
+Host.new = function(hostname, threshold, unmergeable_tokens)
+  return setmetatable({
+    threshold           = threshold          or 1.0,
+    unmergeable_tokens  = unmergeable_tokens or {},
+    hostname            = hostname,
+    root                = {},
+    score               = {},
+    endpoints                = {}
+  }, {
+    __index = Host
+  })
+end
+
+function Host:match(path)
+  return array.choose(self:get_paths(), function(x)
+    return straux.is_path_equivalent(path, x)
+  end)
+end
+
+function Host:get_paths()
+  return array.sort(get_paths_recursive(self, self.root, ""))
+end
+
+
+function Host:learn(method, path, query, body, headers)
+  add_path(self, path)
+  local endpoint = find_matching_endpoint(self, path)
+  endpoint:add_parameter_info(path, query, body, headers)
 end
 
 function Host:unlearn(path)
