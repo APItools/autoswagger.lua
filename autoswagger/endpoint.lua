@@ -8,10 +8,10 @@ local WILDCARD = base.WILDCARD
 
 local Endpoint = {}
 
-function Endpoint.new(endpoint)
+function Endpoint.new(path)
   return setmetatable({
-    endpoint = endpoint,
-    tokens = straux.tokenize(endpoint)
+    path = path,
+    tokens = straux.tokenize(path)
   }, {
     __index = Endpoint
   })

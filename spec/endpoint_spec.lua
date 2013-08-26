@@ -3,7 +3,7 @@ local Endpoint = require 'autoswagger.endpoint'
 describe('Endpoint', function()
   it('can be created', function()
     local endpoint = Endpoint.new('/foo/bar')
-    assert.equal(endpoint.endpoint, '/foo/bar')
+    assert.equal(endpoint.path, '/foo/bar')
   end)
 
   describe('parse_path_params', function()
