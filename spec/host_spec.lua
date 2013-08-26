@@ -5,28 +5,28 @@ local EOL  = as.EOL
 local function create_host()
   local h = Host.new('google.com')
 
-  h:learn("/users/foo/activate.xml")
-  h:learn("/applications/foo/activate.xml")
+  h:learn("GET","/users/foo/activate.xml")
+  h:learn("GET","/applications/foo/activate.xml")
 
-  h:learn("/applications/foo2/activate.xml")
-  h:learn("/applications/foo3/activate.xml")
+  h:learn("GET","/applications/foo2/activate.xml")
+  h:learn("GET","/applications/foo3/activate.xml")
 
-  h:learn("/users/foo4/activate.xml")
-  h:learn("/users/foo5/activate.xml")
+  h:learn("GET","/users/foo4/activate.xml")
+  h:learn("GET","/users/foo5/activate.xml")
 
-  h:learn("/applications/foo4/activate.xml")
-  h:learn("/applications/foo5/activate.xml")
+  h:learn("GET","/applications/foo4/activate.xml")
+  h:learn("GET","/applications/foo5/activate.xml")
 
-  h:learn("/services/foo5/activate.xml")
-  h:learn("/fulanitos/foo5/activate.xml")
+  h:learn("GET","/services/foo5/activate.xml")
+  h:learn("GET","/fulanitos/foo5/activate.xml")
 
-  h:learn("/fulanitos/foo6/activate.xml")
-  h:learn("/fulanitos/foo7/activate.xml")
-  h:learn("/fulanitos/foo8/activate.xml")
+  h:learn("GET","/fulanitos/foo6/activate.xml")
+  h:learn("GET","/fulanitos/foo7/activate.xml")
+  h:learn("GET","/fulanitos/foo8/activate.xml")
 
-  h:learn("/services/foo6/activate.xml")
-  h:learn("/services/foo7/activate.xml")
-  h:learn("/services/foo8/activate.xml")
+  h:learn("GET","/services/foo6/activate.xml")
+  h:learn("GET","/services/foo7/activate.xml")
+  h:learn("GET","/services/foo8/activate.xml")
 
   return h
 end
@@ -71,18 +71,18 @@ describe('Host', function()
     it('adds new paths only when they are really new', function()
       local h = Host.new()
 
-      h:learn("/users/foo/activate.xml")
+      h:learn("GET","/users/foo/activate.xml")
       assert.same( {"/users/foo/activate.xml"}, h:get_paths())
 
-      h:learn("/applications/foo/activate.xml")
+      h:learn("GET","/applications/foo/activate.xml")
       assert.same( {"/*/foo/activate.xml"}, h:get_paths())
 
-      h:learn("/applications/foo2/activate.xml")
-      h:learn("/applications/foo3/activate.xml")
-      h:learn("/users/foo4/activate.xml")
-      h:learn("/users/foo5/activate.xml")
-      h:learn("/users/foo6/activate.xml")
-      h:learn("/users/foo7/activate.xml")
+      h:learn("GET","/applications/foo2/activate.xml")
+      h:learn("GET","/applications/foo3/activate.xml")
+      h:learn("GET","/users/foo4/activate.xml")
+      h:learn("GET","/users/foo5/activate.xml")
+      h:learn("GET","/users/foo6/activate.xml")
+      h:learn("GET","/users/foo7/activate.xml")
 
       assert.same(h:get_paths(), {
         "/*/foo/activate.xml",
@@ -90,40 +90,40 @@ describe('Host', function()
         "/users/*/activate.xml"
       })
 
-      h:learn("/users/foo/activate.xml")
+      h:learn("GET","/users/foo/activate.xml")
 
       assert.same( h:get_paths(), {
         "/applications/*/activate.xml",
         "/users/*/activate.xml"
       })
 
-      h:learn("/applications/foo4/activate.xml")
-      h:learn("/applications/foo5/activate.xml")
+      h:learn("GET","/applications/foo4/activate.xml")
+      h:learn("GET","/applications/foo5/activate.xml")
 
-      h:learn("/services/bar5/activate.xml")
+      h:learn("GET","/services/bar5/activate.xml")
 
-      h:learn("/fulanitos/bar5/activate.xml")
-      h:learn("/fulanitos/bar6/activate.xml")
-      h:learn("/fulanitos/bar7/activate.xml")
-      h:learn("/fulanitos/bar8/activate.xml")
+      h:learn("GET","/fulanitos/bar5/activate.xml")
+      h:learn("GET","/fulanitos/bar6/activate.xml")
+      h:learn("GET","/fulanitos/bar7/activate.xml")
+      h:learn("GET","/fulanitos/bar8/activate.xml")
 
-      h:learn("/services/foo6/activate.xml")
-      h:learn("/services/foo7/activate.xml")
-      h:learn("/services/foo8/activate.xml")
+      h:learn("GET","/services/foo6/activate.xml")
+      h:learn("GET","/services/foo7/activate.xml")
+      h:learn("GET","/services/foo8/activate.xml")
 
-      h:learn("/applications/foo4/activate.xml")
-      h:learn("/applications/foo5/activate.xml")
+      h:learn("GET","/applications/foo4/activate.xml")
+      h:learn("GET","/applications/foo5/activate.xml")
 
-      h:learn("/services/bar5/activate.xml")
-      h:learn("/fulanitos/bar5/activate.xml")
+      h:learn("GET","/services/bar5/activate.xml")
+      h:learn("GET","/fulanitos/bar5/activate.xml")
 
-      h:learn("/fulanitos/bar6/activate.xml")
-      h:learn("/fulanitos/bar7/activate.xml")
-      h:learn("/fulanitos/bar8/activate.xml")
+      h:learn("GET","/fulanitos/bar6/activate.xml")
+      h:learn("GET","/fulanitos/bar7/activate.xml")
+      h:learn("GET","/fulanitos/bar8/activate.xml")
 
-      h:learn("/services/bar6/activate.xml")
-      h:learn("/services/bar7/activate.xml")
-      h:learn("/services/bar8/activate.xml")
+      h:learn("GET","/services/bar6/activate.xml")
+      h:learn("GET","/services/bar7/activate.xml")
+      h:learn("GET","/services/bar8/activate.xml")
 
 
       assert.same( h:get_paths(), {
@@ -142,24 +142,24 @@ describe('Host', function()
     it('can handle edge cases', function()
       local h = Host.new()
 
-      h:learn("/services/foo6/activate.xml")
-      h:learn("/services/foo7/activate.xml")
-      h:learn("/services/foo8/activate.xml")
+      h:learn("GET","/services/foo6/activate.xml")
+      h:learn("GET","/services/foo7/activate.xml")
+      h:learn("GET","/services/foo8/activate.xml")
 
       assert.same( {"/services/*/activate.xml"}, h:get_paths())
 
-      h:learn("/services/foo6/deactivate.xml")
-      h:learn("/services/foo7/deactivate.xml")
-      h:learn("/services/foo8/deactivate.xml")
+      h:learn("GET","/services/foo6/deactivate.xml")
+      h:learn("GET","/services/foo7/deactivate.xml")
+      h:learn("GET","/services/foo8/deactivate.xml")
 
       assert.same( h:get_paths(), {
         "/services/*/activate.xml",
         "/services/*/deactivate.xml"
       })
 
-      h:learn("/services/foo/60.xml")
-      h:learn("/services/foo/61.xml")
-      h:learn("/services/foo/62.xml")
+      h:learn("GET","/services/foo/60.xml")
+      h:learn("GET","/services/foo/61.xml")
+      h:learn("GET","/services/foo/62.xml")
 
       assert.same( h:get_paths(), {
         "/services/*/activate.xml",
@@ -173,12 +173,12 @@ describe('Host', function()
 
       local h = Host.new('google.com') -- default: threshold = 1
 
-      h:learn("/services/foo6/activate.xml")
-      h:learn("/services/foo6/deactivate.xml")
-      h:learn("/services/foo7/activate.xml")
-      h:learn("/services/foo7/deactivate.xml")
-      h:learn("/services/foo8/activate.xml")
-      h:learn("/services/foo8/deactivate.xml")
+      h:learn("GET","/services/foo6/activate.xml")
+      h:learn("GET","/services/foo6/deactivate.xml")
+      h:learn("GET","/services/foo7/activate.xml")
+      h:learn("GET","/services/foo7/deactivate.xml")
+      h:learn("GET","/services/foo8/activate.xml")
+      h:learn("GET","/services/foo8/deactivate.xml")
 
       assert.same( h:get_paths(), {
         "/services/foo6/*.xml",
@@ -189,12 +189,12 @@ describe('Host', function()
       -- never merge
       h = Host.new('google.com', 0.0)
 
-      h:learn("/services/foo6/activate.xml")
-      h:learn("/services/foo6/deactivate.xml")
-      h:learn("/services/foo7/activate.xml")
-      h:learn("/services/foo7/deactivate.xml")
-      h:learn("/services/foo8/activate.xml")
-      h:learn("/services/foo8/deactivate.xml")
+      h:learn("GET","/services/foo6/activate.xml")
+      h:learn("GET","/services/foo6/deactivate.xml")
+      h:learn("GET","/services/foo7/activate.xml")
+      h:learn("GET","/services/foo7/deactivate.xml")
+      h:learn("GET","/services/foo8/activate.xml")
+      h:learn("GET","/services/foo8/deactivate.xml")
 
       assert.same( h:get_paths(), {
         "/services/foo6/activate.xml",
@@ -214,12 +214,12 @@ describe('Host', function()
         foo6 = 1, foo7 = 1, foo8 = 1
       }
 
-      h:learn("/services/foo6/activate.xml")
-      h:learn("/services/foo6/deactivate.xml")
-      h:learn("/services/foo7/activate.xml")
-      h:learn("/services/foo7/deactivate.xml")
-      h:learn("/services/foo8/activate.xml")
-      h:learn("/services/foo8/deactivate.xml")
+      h:learn("GET","/services/foo6/activate.xml")
+      h:learn("GET","/services/foo6/deactivate.xml")
+      h:learn("GET","/services/foo7/activate.xml")
+      h:learn("GET","/services/foo7/deactivate.xml")
+      h:learn("GET","/services/foo8/activate.xml")
+      h:learn("GET","/services/foo8/deactivate.xml")
 
       assert.same( h:get_paths(), {
         "/services/*/activate.xml",
@@ -233,16 +233,16 @@ describe('Host', function()
     -- without unmergeable tokens
     local h = Host.new('google.com')
 
-    h:learn("/services/foo6/activate.xml")
-    h:learn("/services/foo6/deactivate.xml")
+    h:learn("GET","/services/foo6/activate.xml")
+    h:learn("GET","/services/foo6/deactivate.xml")
 
     assert.same( h:get_paths(), { "/services/foo6/*.xml" })
 
-    h:learn("/services/foo7/activate.xml")
-    h:learn("/services/foo7/deactivate.xml")
+    h:learn("GET","/services/foo7/activate.xml")
+    h:learn("GET","/services/foo7/deactivate.xml")
 
-    h:learn("/services/foo8/activate.xml")
-    h:learn("/services/foo8/deactivate.xml")
+    h:learn("GET","/services/foo8/activate.xml")
+    h:learn("GET","/services/foo8/deactivate.xml")
 
     assert.same( h:get_paths(), {
       "/services/foo6/*.xml",
@@ -253,19 +253,19 @@ describe('Host', function()
     -- with unmergeable tokens
     h = Host.new('google.com', 1.0, {"activate", "deactivate"})
 
-    h:learn("/services/foo6/activate.xml")
-    h:learn("/services/foo6/deactivate.xml")
+    h:learn("GET","/services/foo6/activate.xml")
+    h:learn("GET","/services/foo6/deactivate.xml")
 
     assert.same( h:get_paths(), {
       "/services/foo6/activate.xml",
       "/services/foo6/deactivate.xml"
     })
 
-    h:learn("/services/foo7/activate.xml")
-    h:learn("/services/foo7/deactivate.xml")
+    h:learn("GET","/services/foo7/activate.xml")
+    h:learn("GET","/services/foo7/deactivate.xml")
 
-    h:learn("/services/foo8/activate.xml")
-    h:learn("/services/foo8/deactivate.xml")
+    h:learn("GET","/services/foo8/activate.xml")
+    h:learn("GET","/services/foo8/deactivate.xml")
 
     assert.same( h:get_paths(), {
       "/services/*/activate.xml",
@@ -277,22 +277,22 @@ describe('Host', function()
   it('unifies paths', function()
     local h = Host.new('google.com')
 
-    h:learn("/services/foo6/activate.xml")
-    h:learn("/services/foo6/deactivate.xml")
+    h:learn("GET","/services/foo6/activate.xml")
+    h:learn("GET","/services/foo6/deactivate.xml")
 
     assert.same( {"/services/foo6/*.xml"}, h:get_paths())
 
-    h:learn("/services/foo6/activate.xml")
-    h:learn("/services/foo6/deactivate.xml")
+    h:learn("GET","/services/foo6/activate.xml")
+    h:learn("GET","/services/foo6/deactivate.xml")
 
-    h:learn("/services/foo7/activate.xml")
-    h:learn("/services/foo7/deactivate.xml")
+    h:learn("GET","/services/foo7/activate.xml")
+    h:learn("GET","/services/foo7/deactivate.xml")
 
-    h:learn("/services/foo8/activate.xml")
-    h:learn("/services/foo8/deactivate.xml")
+    h:learn("GET","/services/foo8/activate.xml")
+    h:learn("GET","/services/foo8/deactivate.xml")
 
-    h:learn("/services/foo9/activate.xml")
-    h:learn("/services/foo9/deactivate.xml")
+    h:learn("GET","/services/foo9/activate.xml")
+    h:learn("GET","/services/foo9/deactivate.xml")
 
     assert.same( {
       "/services/foo6/*.xml",
@@ -301,8 +301,8 @@ describe('Host', function()
       "/services/foo9/*.xml"
     }, h:get_paths())
 
-    h:learn("/services/foo1/activate.xml")
-    h:learn("/services/foo2/activate.xml")
+    h:learn("GET","/services/foo1/activate.xml")
+    h:learn("GET","/services/foo2/activate.xml")
 
     assert.same( {
       "/services/*/activate.xml",
@@ -313,8 +313,8 @@ describe('Host', function()
     }, h:get_paths())
 
     for i=1,5 do
-      h:learn("/services/" .. tostring(i) .. "/deactivate.xml")
-      h:learn("/services/" .. tostring(i) .. "/activate.xml")
+      h:learn("GET","/services/" .. tostring(i) .. "/deactivate.xml")
+      h:learn("GET","/services/" .. tostring(i) .. "/activate.xml")
     end
 
 
@@ -327,10 +327,10 @@ describe('Host', function()
       "/services/foo9/*.xml"
     }, h:get_paths())
 
-    h:learn("/services/foo6/activate.xml")
-    h:learn("/services/foo7/activate.xml")
-    h:learn("/services/foo8/deactivate.xml")
-    h:learn("/services/foo9/deactivate.xml")
+    h:learn("GET","/services/foo6/activate.xml")
+    h:learn("GET","/services/foo7/activate.xml")
+    h:learn("GET","/services/foo8/deactivate.xml")
+    h:learn("GET","/services/foo9/deactivate.xml")
 
     assert.same( {
       "/services/*/activate.xml",
@@ -342,15 +342,15 @@ describe('Host', function()
   it('compresses paths (again)', function()
     local h = Host.new('google.com')
 
-    h:learn("/admin/api/features.xml")
-    h:learn("/admin/api/applications.xml")
-    h:learn("/admin/api/users.xml")
+    h:learn("GET","/admin/api/features.xml")
+    h:learn("GET","/admin/api/applications.xml")
+    h:learn("GET","/admin/api/users.xml")
 
     assert.same( { "/admin/api/*.xml" }, h:get_paths())
 
-    h:learn("/admin/xxx/features.xml")
-    h:learn("/admin/xxx/applications.xml")
-    h:learn("/admin/xxx/users.xml")
+    h:learn("GET","/admin/xxx/features.xml")
+    h:learn("GET","/admin/xxx/applications.xml")
+    h:learn("GET","/admin/xxx/users.xml")
 
     assert.same( {
       "/admin/api/*.xml",
@@ -362,15 +362,15 @@ describe('Host', function()
 
     local h = Host.new('google.com')
 
-    h:learn("/admin/api/features.xml")
-    h:learn("/admin/api/applications.xml")
-    h:learn("/admin/api/users.xml")
+    h:learn("GET","/admin/api/features.xml")
+    h:learn("GET","/admin/api/applications.xml")
+    h:learn("GET","/admin/api/users.xml")
 
     assert.same( { "/admin/api/*.xml" }, h:get_paths())
 
-    h:learn("/admin/xxx/features.xml")
-    h:learn("/admin/xxx/applications.xml")
-    h:learn("/admin/xxx/users.xml")
+    h:learn("GET","/admin/xxx/features.xml")
+    h:learn("GET","/admin/xxx/applications.xml")
+    h:learn("GET","/admin/xxx/users.xml")
 
     assert.same( {
       "/admin/api/*.xml",
@@ -379,16 +379,16 @@ describe('Host', function()
 
     h = Host.new('google.com')
 
-    h:learn("/admin/api/features.xml")
-    h:learn("/admin/xxx/features.xml")
+    h:learn("GET","/admin/api/features.xml")
+    h:learn("GET","/admin/xxx/features.xml")
 
     assert.same( { "/admin/*/features.xml" }, h:get_paths())
 
-    h:learn("/admin/api/applications.xml")
-    h:learn("/admin/xxx/applications.xml")
+    h:learn("GET","/admin/api/applications.xml")
+    h:learn("GET","/admin/xxx/applications.xml")
 
-    h:learn("/admin/api/users.xml")
-    h:learn("/admin/xxx/users.xml")
+    h:learn("GET","/admin/api/users.xml")
+    h:learn("GET","/admin/xxx/users.xml")
 
     assert.same( {
       "/admin/*/applications.xml",

@@ -171,7 +171,7 @@ function Host:get_paths()
 end
 
 
-function Host:learn(path)
+function Host:learn(method, path, query, headers, body, status)
   local paths = self:match(path)
   local length = #paths
 

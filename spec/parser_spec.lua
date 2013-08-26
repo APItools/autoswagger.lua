@@ -5,28 +5,28 @@ local EOL    = as.EOL
 local function create_path_finder_1()
   local g = Parser.new()
 
-  g:learn("google.com","/users/foo/activate.xml")
-  g:learn("google.com","/applications/foo/activate.xml")
+  g:learn("GET","google.com","/users/foo/activate.xml")
+  g:learn("GET","google.com","/applications/foo/activate.xml")
 
-  g:learn("google.com","/applications/foo2/activate.xml")
-  g:learn("google.com","/applications/foo3/activate.xml")
+  g:learn("GET","google.com","/applications/foo2/activate.xml")
+  g:learn("GET","google.com","/applications/foo3/activate.xml")
 
-  g:learn("google.com","/users/foo4/activate.xml")
-  g:learn("google.com","/users/foo5/activate.xml")
+  g:learn("GET","google.com","/users/foo4/activate.xml")
+  g:learn("GET","google.com","/users/foo5/activate.xml")
 
-  g:learn("google.com","/applications/foo4/activate.xml")
-  g:learn("google.com","/applications/foo5/activate.xml")
+  g:learn("GET","google.com","/applications/foo4/activate.xml")
+  g:learn("GET","google.com","/applications/foo5/activate.xml")
 
-  g:learn("google.com","/services/foo5/activate.xml")
-  g:learn("google.com","/fulanitos/foo5/activate.xml")
+  g:learn("GET","google.com","/services/foo5/activate.xml")
+  g:learn("GET","google.com","/fulanitos/foo5/activate.xml")
 
-  g:learn("google.com","/fulanitos/foo6/activate.xml")
-  g:learn("google.com","/fulanitos/foo7/activate.xml")
-  g:learn("google.com","/fulanitos/foo8/activate.xml")
+  g:learn("GET","google.com","/fulanitos/foo6/activate.xml")
+  g:learn("GET","google.com","/fulanitos/foo7/activate.xml")
+  g:learn("GET","google.com","/fulanitos/foo8/activate.xml")
 
-  g:learn("google.com","/services/foo6/activate.xml")
-  g:learn("google.com","/services/foo7/activate.xml")
-  g:learn("google.com","/services/foo8/activate.xml")
+  g:learn("GET","google.com","/services/foo6/activate.xml")
+  g:learn("GET","google.com","/services/foo7/activate.xml")
+  g:learn("GET","google.com","/services/foo8/activate.xml")
 
   return g
 end
@@ -53,18 +53,18 @@ describe('Parser', function()
     it('adds new paths only when they are really new', function()
       local g = Parser.new()
 
-      g:learn("google.com","/users/foo/activate.xml")
+      g:learn("GET","google.com","/users/foo/activate.xml")
       assert.same( {"/users/foo/activate.xml"}, g:get_paths('google.com'))
 
-      g:learn("google.com","/applications/foo/activate.xml")
+      g:learn("GET","google.com","/applications/foo/activate.xml")
       assert.same( {"/*/foo/activate.xml"}, g:get_paths('google.com'))
 
-      g:learn("google.com","/applications/foo2/activate.xml")
-      g:learn("google.com","/applications/foo3/activate.xml")
-      g:learn("google.com","/users/foo4/activate.xml")
-      g:learn("google.com","/users/foo5/activate.xml")
-      g:learn("google.com","/users/foo6/activate.xml")
-      g:learn("google.com","/users/foo7/activate.xml")
+      g:learn("GET","google.com","/applications/foo2/activate.xml")
+      g:learn("GET","google.com","/applications/foo3/activate.xml")
+      g:learn("GET","google.com","/users/foo4/activate.xml")
+      g:learn("GET","google.com","/users/foo5/activate.xml")
+      g:learn("GET","google.com","/users/foo6/activate.xml")
+      g:learn("GET","google.com","/users/foo7/activate.xml")
 
       assert.same(g:get_paths('google.com'), {
         "/*/foo/activate.xml",
@@ -72,63 +72,63 @@ describe('Parser', function()
         "/users/*/activate.xml"
       })
 
-      g:learn("google.com","/users/foo/activate.xml")
+      g:learn("GET","google.com","/users/foo/activate.xml")
 
       assert.same( g:get_paths('google.com'), {
         "/applications/*/activate.xml",
         "/users/*/activate.xml"
       })
 
-      g:learn("google.com","/applications/foo4/activate.xml")
-      g:learn("google.com","/applications/foo5/activate.xml")
+      g:learn("GET","google.com","/applications/foo4/activate.xml")
+      g:learn("GET","google.com","/applications/foo5/activate.xml")
 
-      g:learn("google.com","/services/bar5/activate.xml")
+      g:learn("GET","google.com","/services/bar5/activate.xml")
 
-      g:learn("google.com","/fulanitos/bar5/activate.xml")
-      g:learn("google.com","/fulanitos/bar6/activate.xml")
-      g:learn("google.com","/fulanitos/bar7/activate.xml")
-      g:learn("google.com","/fulanitos/bar8/activate.xml")
+      g:learn("GET","google.com","/fulanitos/bar5/activate.xml")
+      g:learn("GET","google.com","/fulanitos/bar6/activate.xml")
+      g:learn("GET","google.com","/fulanitos/bar7/activate.xml")
+      g:learn("GET","google.com","/fulanitos/bar8/activate.xml")
 
-      g:learn("google.com","/services/foo6/activate.xml")
-      g:learn("google.com","/services/foo7/activate.xml")
-      g:learn("google.com","/services/foo8/activate.xml")
+      g:learn("GET","google.com","/services/foo6/activate.xml")
+      g:learn("GET","google.com","/services/foo7/activate.xml")
+      g:learn("GET","google.com","/services/foo8/activate.xml")
 
-      g:learn("google.com","/applications/foo4/activate.xml")
-      g:learn("google.com","/applications/foo5/activate.xml")
+      g:learn("GET","google.com","/applications/foo4/activate.xml")
+      g:learn("GET","google.com","/applications/foo5/activate.xml")
 
-      g:learn("google.com","/services/bar5/activate.xml")
-      g:learn("google.com","/fulanitos/bar5/activate.xml")
+      g:learn("GET","google.com","/services/bar5/activate.xml")
+      g:learn("GET","google.com","/fulanitos/bar5/activate.xml")
 
-      g:learn("google.com","/fulanitos/bar6/activate.xml")
-      g:learn("google.com","/fulanitos/bar7/activate.xml")
-      g:learn("google.com","/fulanitos/bar8/activate.xml")
+      g:learn("GET","google.com","/fulanitos/bar6/activate.xml")
+      g:learn("GET","google.com","/fulanitos/bar7/activate.xml")
+      g:learn("GET","google.com","/fulanitos/bar8/activate.xml")
 
-      g:learn("google.com","/services/bar6/activate.xml")
-      g:learn("google.com","/services/bar7/activate.xml")
-      g:learn("google.com","/services/bar8/activate.xml")
+      g:learn("GET","google.com","/services/bar6/activate.xml")
+      g:learn("GET","google.com","/services/bar7/activate.xml")
+      g:learn("GET","google.com","/services/bar8/activate.xml")
     end)
 
     it('can handle edge cases', function()
       local g = Parser.new()
 
-      g:learn("google.com","/services/foo6/activate.xml")
-      g:learn("google.com","/services/foo7/activate.xml")
-      g:learn("google.com","/services/foo8/activate.xml")
+      g:learn("GET","google.com","/services/foo6/activate.xml")
+      g:learn("GET","google.com","/services/foo7/activate.xml")
+      g:learn("GET","google.com","/services/foo8/activate.xml")
 
       assert.same( {"/services/*/activate.xml"}, g:get_paths('google.com'))
 
-      g:learn("google.com","/services/foo6/deactivate.xml")
-      g:learn("google.com","/services/foo7/deactivate.xml")
-      g:learn("google.com","/services/foo8/deactivate.xml")
+      g:learn("GET","google.com","/services/foo6/deactivate.xml")
+      g:learn("GET","google.com","/services/foo7/deactivate.xml")
+      g:learn("GET","google.com","/services/foo8/deactivate.xml")
 
       assert.same( g:get_paths('google.com'), {
         "/services/*/activate.xml",
         "/services/*/deactivate.xml"
       })
 
-      g:learn("google.com","/services/foo/60.xml")
-      g:learn("google.com","/services/foo/61.xml")
-      g:learn("google.com","/services/foo/62.xml")
+      g:learn("GET","google.com","/services/foo/60.xml")
+      g:learn("GET","google.com","/services/foo/61.xml")
+      g:learn("GET","google.com","/services/foo/62.xml")
 
       assert.same( g:get_paths('google.com'), {
         "/services/*/activate.xml",
@@ -142,22 +142,22 @@ describe('Parser', function()
   it('unifies paths', function()
     local g = Parser.new()
 
-    g:learn("google.com","/services/foo6/activate.xml")
-    g:learn("google.com","/services/foo6/deactivate.xml")
+    g:learn("GET","google.com","/services/foo6/activate.xml")
+    g:learn("GET","google.com","/services/foo6/deactivate.xml")
 
     assert.same( {"/services/foo6/*.xml"}, g:get_paths('google.com'))
 
-    g:learn("google.com","/services/foo6/activate.xml")
-    g:learn("google.com","/services/foo6/deactivate.xml")
+    g:learn("GET","google.com","/services/foo6/activate.xml")
+    g:learn("GET","google.com","/services/foo6/deactivate.xml")
 
-    g:learn("google.com","/services/foo7/activate.xml")
-    g:learn("google.com","/services/foo7/deactivate.xml")
+    g:learn("GET","google.com","/services/foo7/activate.xml")
+    g:learn("GET","google.com","/services/foo7/deactivate.xml")
 
-    g:learn("google.com","/services/foo8/activate.xml")
-    g:learn("google.com","/services/foo8/deactivate.xml")
+    g:learn("GET","google.com","/services/foo8/activate.xml")
+    g:learn("GET","google.com","/services/foo8/deactivate.xml")
 
-    g:learn("google.com","/services/foo9/activate.xml")
-    g:learn("google.com","/services/foo9/deactivate.xml")
+    g:learn("GET","google.com","/services/foo9/activate.xml")
+    g:learn("GET","google.com","/services/foo9/deactivate.xml")
 
     assert.same( {
       "/services/foo6/*.xml",
@@ -166,8 +166,8 @@ describe('Parser', function()
       "/services/foo9/*.xml"
     }, g:get_paths('google.com'))
 
-    g:learn("google.com","/services/foo1/activate.xml")
-    g:learn("google.com","/services/foo2/activate.xml")
+    g:learn("GET","google.com","/services/foo1/activate.xml")
+    g:learn("GET","google.com","/services/foo2/activate.xml")
 
     assert.same( {
       "/services/*/activate.xml",
@@ -178,8 +178,8 @@ describe('Parser', function()
     }, g:get_paths('google.com'))
 
     for i=1,5 do
-      g:learn("google.com","/services/" .. tostring(i) .. "/deactivate.xml")
-      g:learn("google.com","/services/" .. tostring(i) .. "/activate.xml")
+      g:learn("GET","google.com","/services/" .. tostring(i) .. "/deactivate.xml")
+      g:learn("GET","google.com","/services/" .. tostring(i) .. "/activate.xml")
     end
 
 
@@ -192,10 +192,10 @@ describe('Parser', function()
       "/services/foo9/*.xml"
     }, g:get_paths('google.com'))
 
-    g:learn("google.com","/services/foo6/activate.xml")
-    g:learn("google.com","/services/foo7/activate.xml")
-    g:learn("google.com","/services/foo8/deactivate.xml")
-    g:learn("google.com","/services/foo9/deactivate.xml")
+    g:learn("GET","google.com","/services/foo6/activate.xml")
+    g:learn("GET","google.com","/services/foo7/activate.xml")
+    g:learn("GET","google.com","/services/foo8/deactivate.xml")
+    g:learn("GET","google.com","/services/foo9/deactivate.xml")
 
     assert.same( {
       "/services/*/activate.xml",
@@ -207,15 +207,15 @@ describe('Parser', function()
   it('compresses paths (again)', function()
     local g = Parser.new()
 
-    g:learn("google.com","/admin/api/features.xml")
-    g:learn("google.com","/admin/api/applications.xml")
-    g:learn("google.com","/admin/api/users.xml")
+    g:learn("GET","google.com","/admin/api/features.xml")
+    g:learn("GET","google.com","/admin/api/applications.xml")
+    g:learn("GET","google.com","/admin/api/users.xml")
 
     assert.same( { "/admin/api/*.xml" }, g:get_paths('google.com'))
 
-    g:learn("google.com","/admin/xxx/features.xml")
-    g:learn("google.com","/admin/xxx/applications.xml")
-    g:learn("google.com","/admin/xxx/users.xml")
+    g:learn("GET","google.com","/admin/xxx/features.xml")
+    g:learn("GET","google.com","/admin/xxx/applications.xml")
+    g:learn("GET","google.com","/admin/xxx/users.xml")
 
     assert.same( {
       "/admin/api/*.xml",
@@ -227,15 +227,15 @@ describe('Parser', function()
 
     local g = Parser.new()
 
-    g:learn("google.com","/admin/api/features.xml")
-    g:learn("google.com","/admin/api/applications.xml")
-    g:learn("google.com","/admin/api/users.xml")
+    g:learn("GET","google.com","/admin/api/features.xml")
+    g:learn("GET","google.com","/admin/api/applications.xml")
+    g:learn("GET","google.com","/admin/api/users.xml")
 
     assert.same( { "/admin/api/*.xml" }, g:get_paths('google.com'))
 
-    g:learn("google.com","/admin/xxx/features.xml")
-    g:learn("google.com","/admin/xxx/applications.xml")
-    g:learn("google.com","/admin/xxx/users.xml")
+    g:learn("GET","google.com","/admin/xxx/features.xml")
+    g:learn("GET","google.com","/admin/xxx/applications.xml")
+    g:learn("GET","google.com","/admin/xxx/users.xml")
 
     assert.same( {
       "/admin/api/*.xml",
@@ -244,16 +244,16 @@ describe('Parser', function()
 
     g = Parser.new()
 
-    g:learn("google.com","/admin/api/features.xml")
-    g:learn("google.com","/admin/xxx/features.xml")
+    g:learn("GET","google.com","/admin/api/features.xml")
+    g:learn("GET","google.com","/admin/xxx/features.xml")
 
     assert.same( { "/admin/*/features.xml" }, g:get_paths('google.com'))
 
-    g:learn("google.com","/admin/api/applications.xml")
-    g:learn("google.com","/admin/xxx/applications.xml")
+    g:learn("GET","google.com","/admin/api/applications.xml")
+    g:learn("GET","google.com","/admin/xxx/applications.xml")
 
-    g:learn("google.com","/admin/api/users.xml")
-    g:learn("google.com","/admin/xxx/users.xml")
+    g:learn("GET","google.com","/admin/api/users.xml")
+    g:learn("GET","google.com","/admin/xxx/users.xml")
 
     assert.same( {
       "/admin/*/applications.xml",
