@@ -46,11 +46,58 @@ local function is_path_equivalent(path1, path2)
   return true
 end
 
+local function decode_char(c)
+  return string.char(tonumber(c, 16))
+end
+
+local function decode(str)
+  return str:gsub('+', ' '):gsub("%%(%x%x)", decode_char)
+end
+
+-- inspired by https://github.com/golgote/neturl/blob/master/lib/net/url.lua
+local function parse_query(str)
+  str = str or {}
+  local result = {}
+  local keys
+
+  for key,val in str:gmatch('([^&=]+)(=*[^&=]*)') do
+
+    val = val:gsub('^=+', "")
+
+    keys = {}
+    key = decode(key):gsub('%[([^%]]*)%]', function(v)
+      v = v:find("^-?%d+$") and tonumber(v) or decode(v)
+      keys[#keys + 1] = v
+      return "="
+    end):gsub('=+.*$', ""):gsub('%s', "_")
+
+    if #keys > 0 then
+      result[key] = type(result[key]) == 'table' and result[key] or {}
+      local t = result[key]
+      for i,k in ipairs(keys) do
+        t = type(t) == 'table' and t or {}
+
+        if k == ""    then k = #t+1 end
+        if not t[k]   then t[k] = {} end
+        if i == #keys then t[k] = decode(val) end
+
+        t = t[k]
+      end
+    else
+      result[key] = decode(val)
+    end
+
+  end
+
+  return result
+end
+
 local straux = {
-  split = split,
-  begins_with = begins_with,
-  tokenize = tokenize,
-  is_path_equivalent = is_path_equivalent
+  split               = split,
+  begins_with         = begins_with,
+  tokenize            = tokenize,
+  is_path_equivalent  = is_path_equivalent,
+  parse_query         = parse_query
 }
 
 return straux
