@@ -24,8 +24,9 @@ local function parse_query_params(query)
   return straux.parse_query(query)
 end
 
-function API.new(path)
+function API.new(host, path)
   return setmetatable({
+    host = host,
     path = path,
     tokens = straux.tokenize(path),
     operations = {}

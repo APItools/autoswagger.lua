@@ -226,7 +226,6 @@ describe('Host', function()
         "/services/*/deactivate.xml"
       })
     end)
-
   end)
 
   it('understands unmergeable tokens', function()
