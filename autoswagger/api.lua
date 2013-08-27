@@ -1,20 +1,34 @@
 local PATH = (...):match("(.+%.)[^%.]+$") or ""
 
-local straux  = require(PATH .. 'straux')
-local array   = require(PATH .. 'array')
-local base    = require(PATH .. 'base')
-local Param   = require(PATH .. 'param')
+local straux     = require(PATH .. 'straux')
+local array      = require(PATH .. 'array')
+local base       = require(PATH .. 'base')
+local Operation  = require(PATH .. 'operation')
 
 local EOL      = base.EOL
 local WILDCARD = base.WILDCARD
 
 local API = {}
 
+local function parse_body_params(body, headers)
+  if type(headers) == 'table' and headers['Content-Type'] == "application/x-www-form-urlencoded" then
+    if type(body) == 'table' then return body end
+    return straux.parse_query(body)
+  else
+    return {__body = body}
+  end
+end
+
+local function parse_query_params(query)
+  if type(query) == 'table' then return query end
+  return straux.parse_query(query)
+end
+
 function API.new(path)
   return setmetatable({
     path = path,
     tokens = straux.tokenize(path),
-    methods = {}
+    operations = {}
   }, {
     __index = API
   })
@@ -36,16 +50,19 @@ function API:parse_path_params(path)
   return result
 end
 
-function API:add_method(method)
-  method = string.upper(method)
-  if not array.includes(self.methods, method) then
-    self.methods[#self.methods + 1] = method
-    table.sort(self.methods)
-  end
-end
 
-function API:add_parameter_info(path, query, body, headers)
-  local pa
+function API:add_operation_info(method, path, query, body, headers)
+  method   = string.upper(method)
+  query    = query or ""
+  body     = body or ""
+  headers  = headers or {}
+
+  local path_params  = self:parse_path_params(path)
+  local query_params = parse_query_params(query)
+  local body_params  = parse_body_params(body, headers)
+
+  self.operations[method] = self.operations[method] or Operation.new(method)
+  self.operations[method]:add_parameters(path_params, query_params, body_params, headers)
 end
 
 return API

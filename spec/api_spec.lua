@@ -14,48 +14,14 @@ describe('API', function()
     end)
   end)
 
-  describe('add_method', function()
-    it('works on the base case', function()
-      local a = API.new('/foo')
-      a:add_method('GET')
-      assert.same(a.methods, {'GET'})
-    end)
-
-    it('does not repeat', function()
-      local a = API.new('/foo')
-      a:add_method('GET')
-      a:add_method('GET')
-      assert.same(a.methods, {'GET'})
-    end)
-
-    it('uppercases', function()
-      local a = API.new('/foo')
-      a:add_method('get')
-      assert.same(a.methods, {'GET'})
-    end)
-
-    it('sorts', function()
-      local a = API.new('/foo')
-      a:add_method('put')
-      a:add_method('get')
-      assert.same(a.methods, {'GET', 'PUT'})
-    end)
-  end)
-
-  describe('add_parameter_info', function()
+  describe('add_operation_info', function()
     it('adds parameter info to the api', function()
       local a = API.new('/api/accounts/*.xml')
-      a:add_parameter_info("/api/accounts/42",
+      a:add_operation_info("PUT",
+                           "/api/accounts/42",
                            "user_id=1&cat_id=4")
-      assert.same(a.parameters, {
-        accounts_id={
-          name = "account_id",
-          last_values = { 42 },
-        },
-        user_id={},
-        cat_id={}
-      })
-      -- empty
+      assert.truthy(a.operations.PUT)
+      assert.truthy(a.operations.PUT.parameters.accounts_id)
     end)
   end)
 end)

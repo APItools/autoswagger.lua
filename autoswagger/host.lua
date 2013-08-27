@@ -214,9 +214,7 @@ function Host:learn(method, path, query, body, headers)
   add_path(self, path)
 
   local api = find_matching_api(self, path)
-
-  api:add_method(method)
-  api:add_parameter_info(path, query, body, headers)
+  api:add_operation_info(method, path, query, body, headers)
 end
 
 function Host:unlearn(path)
