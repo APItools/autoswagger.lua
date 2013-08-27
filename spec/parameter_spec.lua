@@ -26,4 +26,18 @@ describe('Parameter', function()
     end)
   end)
 
+  describe(':to_swagger', function()
+    it('returns the swagger of 1 parameter', function()
+      local p = Parameter.new({}, 'query', 'user_id')
+      assert.same(p:to_swagger(), {
+        name = 'user_id',
+        paramType = 'query',
+        description = 'user_id',
+        ['type'] = 'string',
+        required = false
+      })
+
+    end)
+  end)
+
 end)

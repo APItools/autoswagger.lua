@@ -465,6 +465,56 @@ describe('Host', function()
 
     end)
 
+
+    describe('to_swagger', function()
+      it('returns a table with the swagger spec corresponding to the host', function()
+        local h = Host.new('google.com')
+
+        for i=1,10 do
+          h:learn('GET', '/users/' .. tostring(i) .. '/app/' .. tostring(i) .. '.xml')
+        end
+
+
+        local s = h:to_swagger()
+
+        local expected_operation = {
+          method = 'GET',
+          nickname = 'unavailable',
+          summary  = 'unavailable',
+          notes    = 'Automatically generated Operation spec',
+          parameters = {
+            { paramType = 'path',
+              name = 'app_id',
+              description = 'app_id',
+              ['type'] = 'string',
+              required = true
+            },
+            { paramType = 'path',
+              name = 'user_id',
+              description = 'user_id',
+              ['type'] = 'string',
+              required = true
+            }
+          }
+        }
+
+        assert.same(s.apis[1].operations[1], expected_operation)
+
+        assert.same(h:to_swagger(), {
+          apiVersion     = "1.0",
+          swaggerVersion = "1.2",
+          models         = {},
+          apis = {
+            { path        = "/users/{user_id}/app/{app_id}.xml",
+              description = "Automatically generated API spec",
+              operations = { expected_operation }
+            }
+          }
+        })
+      end)
+    end)
+
   end)
+
 
 end)

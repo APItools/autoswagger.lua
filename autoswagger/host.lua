@@ -246,9 +246,18 @@ function Host:unlearn(path)
   return true
 end
 
-function Host:get_spec()
-  local spec = {}
-  return spec
+function Host:to_swagger()
+  local swagger_apis = {}
+  for _,api in pairs(self.apis) do
+    swagger_apis[#swagger_apis + 1] = api:to_swagger()
+  end
+
+  return {
+    apiVersion     = "1.0",
+    swaggerVersion = "1.2",
+    models         = {},
+    apis           = swagger_apis
+  }
 end
 
 

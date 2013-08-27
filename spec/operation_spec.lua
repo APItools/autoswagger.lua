@@ -15,7 +15,21 @@ describe('Operation', function()
       local o = Operation.new(api, 'GET')
 
       local params = o:parse_path_parameters('/applications/1/users/2')
-      assert.same({applications_id = '1', users_id = '2'}, params)
+      assert.same({application_id = '1', user_id = '2'}, params)
+    end)
+  end)
+
+  describe(':add_parameter_info', function()
+    it('reads params from the path', function()
+      local api = API.new({}, '/users/*/app/*.xml')
+      local o = Operation.new(api, 'GET')
+
+      for i=1,5 do
+        o:add_parameter_info('/users/' .. tostring(i) .. '/app/' .. tostring(id) .. '.xml')
+      end
+
+      assert.same(o:get_parameter_names(), {'app_id', 'user_id'})
+
     end)
   end)
 end)

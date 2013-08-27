@@ -1,6 +1,20 @@
 local straux = require 'autoswagger.straux'
+local base = require 'autoswagger.base'
+
+local EOL = base.EOL
 
 describe('straux', function()
+
+  describe('tokenize', function()
+    it('parses a regular path', function()
+      local t = straux.tokenize
+
+      assert.same({'users', '1', 'app', '1', '.xml', EOL},
+         t('/users/1/app/1.xml'))
+    end)
+  end)
+
+
   describe('parse_query', function()
     it('transforms a query parameter into a lua table', function()
       local parse_query = straux.parse_query
