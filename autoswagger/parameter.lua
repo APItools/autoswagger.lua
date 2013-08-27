@@ -2,8 +2,9 @@ local Param = {}
 
 local MAX_VALUES_STORED = 3
 
-function Param.new(kind, name)
+function Param.new(operation, kind, name)
   return setmetatable({
+    operation = operation,
     kind = kind,
     name = name,
     values = {}
