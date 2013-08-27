@@ -24,8 +24,9 @@ local function get_body_params_kind(body_params)
   return 'query'
 end
 
-function Operation.new(method)
+function Operation.new(api, method)
   return setmetatable({
+    api    = api,
     method = method,
     parameters = {}
   }, {

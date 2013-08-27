@@ -62,7 +62,7 @@ function API:add_operation_info(method, path, query, body, headers)
   local query_params = parse_query_params(query)
   local body_params  = parse_body_params(body, headers)
 
-  self.operations[method] = self.operations[method] or Operation.new(method)
+  self.operations[method] = self.operations[method] or Operation.new(self, method)
   self.operations[method]:add_parameters(path_params, query_params, body_params, headers)
 end
 
