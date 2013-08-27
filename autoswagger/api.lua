@@ -1,23 +1,26 @@
 local PATH = (...):match("(.+%.)[^%.]+$") or ""
 
 local straux  = require(PATH .. 'straux')
+local array   = require(PATH .. 'array')
 local base    = require(PATH .. 'base')
+local Param   = require(PATH .. 'param')
 
 local EOL      = base.EOL
 local WILDCARD = base.WILDCARD
 
-local Endpoint = {}
+local API = {}
 
-function Endpoint.new(path)
+function API.new(path)
   return setmetatable({
     path = path,
-    tokens = straux.tokenize(path)
+    tokens = straux.tokenize(path),
+    methods = {}
   }, {
-    __index = Endpoint
+    __index = API
   })
 end
 
-function Endpoint:parse_path_params(path)
+function API:parse_path_params(path)
   local tokens = straux.tokenize(path)
 
   local result = {}
@@ -33,7 +36,16 @@ function Endpoint:parse_path_params(path)
   return result
 end
 
-function Endpoint:add_parameter_info(path, query, body, headers)
+function API:add_method(method)
+  method = string.upper(method)
+  if not array.includes(self.methods, method) then
+    self.methods[#self.methods + 1] = method
+    table.sort(self.methods)
+  end
 end
 
-return Endpoint
+function API:add_parameter_info(path, query, body, headers)
+  local pa
+end
+
+return API

@@ -3,7 +3,7 @@ local PATH = (...):match("(.+%.)[^%.]+$") or ""
 local array     = require(PATH .. 'array')
 local straux    = require(PATH .. 'straux')
 local base      = require(PATH .. 'base')
-local Endpoint  = require(PATH .. 'endpoint')
+local API  = require(PATH .. 'api')
 
 local EOL      = base.EOL
 local WILDCARD = base.WILDCARD
@@ -80,15 +80,15 @@ local function get_path_score(self, path)
   return result
 end
 
-local function refresh_endpoints(self)
+local function refresh_apis(self)
   local valid_paths = self:get_paths()
-  for endpoint, _ in pairs(self.endpoints) do
-    if not array.includes(valid_paths, endpoint) then
-      self.endpoints[endpoint] = nil
+  for api, _ in pairs(self.apis) do
+    if not array.includes(valid_paths, api) then
+      self.apis[api] = nil
     end
   end
   for _,path in ipairs(valid_paths) do
-    self.endpoints[path] = self.endpoints[path] or Endpoint.new(path)
+    self.apis[path] = self.apis[path] or API.new(path)
   end
 end
 
@@ -136,7 +136,7 @@ local function add_path(self, path)
 
   if length == 0 then
     insert_path(self, path)
-    refresh_endpoints(self)
+    refresh_apis(self)
   elseif length == 1 then
     increase_path_score(self, paths[1])
     return true
@@ -158,7 +158,7 @@ local function add_path(self, path)
     increase_path_score(self, max_path)
     -- removes one path
     self:unlearn(min_path)
-    refresh_endpoints(self)
+    refresh_apis(self)
   end
 end
 
@@ -176,9 +176,9 @@ local function get_paths_recursive(self, node, prefix)
   return result
 end
 
-local function find_matching_endpoint(self, path)
-  for endpoint_path, endpoint in pairs(self.endpoints) do
-    if straux.is_path_equivalent(path, endpoint_path) then return endpoint end
+local function find_matching_api(self, path)
+  for api_path, api in pairs(self.apis) do
+    if straux.is_path_equivalent(path, api_path) then return api end
   end
 end
 
@@ -193,7 +193,7 @@ Host.new = function(hostname, threshold, unmergeable_tokens)
     hostname            = hostname,
     root                = {},
     score               = {},
-    endpoints                = {}
+    apis                = {}
   }, {
     __index = Host
   })
@@ -212,8 +212,11 @@ end
 
 function Host:learn(method, path, query, body, headers)
   add_path(self, path)
-  local endpoint = find_matching_endpoint(self, path)
-  endpoint:add_parameter_info(path, query, body, headers)
+
+  local api = find_matching_api(self, path)
+
+  api:add_method(method)
+  api:add_parameter_info(path, query, body, headers)
 end
 
 function Host:unlearn(path)
