@@ -92,8 +92,50 @@ local function parse_query(str)
   return result
 end
 
+local SINGULARS = {
+ {'(quiz)zes$', '%1'},
+ {'(matr)ices$', '%1ix'},
+ {'(vert)ices$', '%1ex'},
+ {'(ind)ices$', '%1ex'},
+ {'^(ox)en', '%1'},
+ {'(vir)i$', '%1us'},
+ {'(octop)i$', '%1us'},
+ {'^ax[ie]s$', 'axis'},
+ {'(shoe)s$', '%1'},
+ {'(o)es$', '%1'},
+ {'(status)es$', '%1'},
+ {'(alias)es$', '%1'},
+ {'(bus)ses$', '%1'},
+ {'^lice$', 'louse'},
+ {'^mice$', 'mouse'},
+ {'(sh)es$', '%1'},
+ {'(ss)es$', '%1'},
+ {'(ch)es$', '%1'},
+ {'(x)es$', '%1'},
+ {'series$', 'series'},
+ {'([lr])ves$', '%1f'},
+ {'([^f])ves$', '%1fe'},
+ {'([ti])a$', '%1um'},
+ {'(n)ews$', '%1ews' },
+ {'(ss)$', '%1' },
+ {'^people$', 'person'},
+ {'men$', 'man'},
+ {'^children$', 'child'},
+ {'^kine$', 'cow'},
+ {'s$', '' }
+}
+
+local singularize = function(str)
+  for i=1, #SINGULARS do
+    local pattern, match = unpack(SINGULARS[i])
+    local found = str:find(pattern)
+    if found then return str:gsub(pattern, match) end
+  end
+  return str
+end
+
 local make_id = function(str)
-  return tostring(str) .. "_id"
+  return singularize(tostring(str)) .. "_id"
 end
 
 local straux = {
@@ -102,7 +144,8 @@ local straux = {
   tokenize            = tokenize,
   is_path_equivalent  = is_path_equivalent,
   parse_query         = parse_query,
-  make_id             = make_id
+  make_id             = make_id,
+  singularize         = singularize
 }
 
 return straux
