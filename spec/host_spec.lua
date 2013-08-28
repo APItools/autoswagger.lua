@@ -479,7 +479,7 @@ describe('Host', function()
 
         local expected_operation = {
           method = 'GET',
-          nickname = 'unavailable',
+          nickname = 'get_app_of_users',
           summary  = 'Get app of users',
           notes    = 'Automatically generated Operation spec',
           parameters = {

@@ -115,10 +115,8 @@ function Operation:get_parameter_names()
 end
 
 function Operation:get_nickname()
-  return 'unavailable'
+  return table.concat(straux.split(self:get_summary(), ' '), '_'):lower()
 end
-
-
 
 function Operation:get_summary()
 
