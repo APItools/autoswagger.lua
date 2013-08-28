@@ -157,7 +157,7 @@ local function add_path(self, path)
 
     increase_path_score(self, max_path)
     -- removes one path
-    self:unlearn(min_path)
+    self:forget(min_path)
     refresh_apis(self)
   end
 end
@@ -217,7 +217,7 @@ function Host:learn(method, path, query, body, headers)
   api:add_operation_info(method, path, query, body, headers)
 end
 
-function Host:unlearn(path)
+function Host:forget(path)
 
   local tokens = straux.tokenize(path)
   local node   = self.root

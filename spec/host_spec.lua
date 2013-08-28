@@ -397,12 +397,12 @@ describe('Host', function()
 
   end)
 
-  describe(':unlearn', function()
-    it('unlearns the given path rules', function()
+  describe(':forget', function()
+    it('forgets the given path rules', function()
 
       local h = create_host()
 
-      assert.truthy(h:unlearn("/*/foo5/activate.xml"))
+      assert.truthy(h:forget("/*/foo5/activate.xml"))
 
       assert.same(h:get_paths(), {
         "/*/foo/activate.xml",
@@ -412,7 +412,7 @@ describe('Host', function()
         "/users/*/activate.xml"
       })
 
-      assert.truthy(h:unlearn("/services/*/activate.xml"))
+      assert.truthy(h:forget("/services/*/activate.xml"))
 
       assert.same(h:get_paths(), {
         "/*/foo/activate.xml",
@@ -421,8 +421,8 @@ describe('Host', function()
         "/users/*/activate.xml"
       })
 
-      -- unlearn only works for exact paths, not for matches
-      assert.equals(false, h:unlearn("/*/*/activate.xml"))
+      -- forget only works for exact paths, not for matches
+      assert.equals(false, h:forget("/*/*/activate.xml"))
     end)
 
     it('handles a regression test that happened in the past', function()
@@ -452,7 +452,7 @@ describe('Host', function()
         "/services/foo9/*.xml"
       })
 
-      h:unlearn("/services/*/activate.xml")
+      h:forget("/services/*/activate.xml")
 
       assert.same(h:get_paths(), {
         "/services/*/deactivate.xml",
