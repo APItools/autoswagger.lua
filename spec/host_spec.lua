@@ -1,6 +1,5 @@
-local as = require('autoswagger')
-local Host = as.Host
-local EOL  = as.EOL
+local Host = require('autoswagger.host')
+local EOL  = require('autoswagger.base').EOL
 
 local function create_host()
   local h = Host:new('google.com')
@@ -477,6 +476,8 @@ describe('Host', function()
 
         local s = h:to_swagger()
 
+        -- I'm dividing this in two because busted (stupidly) hides part of the output when there are
+        -- mismatches on the asserts
         local expected_operation = {
           method = 'GET',
           nickname = 'get_app_of_users',
@@ -500,14 +501,15 @@ describe('Host', function()
 
         assert.same(s.apis[1].operations[1], expected_operation)
 
-        assert.same(h:to_swagger(), {
+        s.apis[1].operations = nil
+
+        assert.same(s, {
           apiVersion     = "1.0",
           swaggerVersion = "1.2",
           models         = {},
           apis = {
             { path        = "/users/{user_id}/app/{app_id}.xml",
               description = "Automatically generated API spec",
-              operations = { expected_operation }
             }
           }
         })
