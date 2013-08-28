@@ -10,6 +10,35 @@ local WILDCARD = base.WILDCARD
 local Operation = {}
 local Operationmt = {__index = Operation}
 
+local VERBS = {
+  GET     = "Get",
+  POST    = "Create",
+  PUT     = "Modify",
+  DELETE  = "Delete",
+  HEAD    = "Head",
+  PATCH   = "Patch"
+}
+
+local function get_verb_for_method(method, number)
+  if number == 0 and method == "GET" then return "List" end
+  return VERBS[method] or straux.titleize(method)
+end
+
+
+local function get_tokens_without_EOL_or_extension(self)
+  local result = array.copy(self.api.tokens)
+  local length = #result
+
+  result[length] = nil -- remove EOL
+  length = length - 1
+
+  local extension = result[length]
+  if extension and straux.begins_with(extension, '.') then
+    result[length] = nil
+  end
+  return result
+end
+
 function Operation:new(api, method)
   return setmetatable({
     api    = api,
@@ -89,8 +118,67 @@ function Operation:get_nickname()
   return 'unavailable'
 end
 
+
+
 function Operation:get_summary()
-  return 'unavailable'
+
+  local tokens = get_tokens_without_EOL_or_extension(self)
+  local tokens_length = #tokens
+
+  local wildcard_positions, wildcard_length = {}, 0
+  for i=tokens_length,1,-1 do
+    if tokens[i] == WILDCARD then
+      wildcard_length = wildcard_length + 1
+      wildcard_positions[wildcard_length] = i
+    end
+  end
+
+  local last_wildcard_pos = wildcard_positions[1]
+  local last_name         = last_wildcard_pos and last_wildcard_pos > 1 and tokens[last_wildcard_pos - 1]
+  local last_suffix       = last_wildcard_pos and tokens[last_wildcard_pos + 1]
+
+  local verb = get_verb_for_method(self.method, wildcard_length)
+  local words = {}
+
+  if wildcard_length == 0 then
+
+    local last_token = tokens[tokens_length]
+    words = last_token and { verb, last_token } or {verb}
+
+  elseif wildcard_length == 1 then
+
+    if self.method == 'PUT' and last_name and last_suffix then
+      words = { straux.titleize(last_suffix), last_name, 'by id'}
+    elseif self.method == 'POST' then
+      if last_name and last_suffix then
+        words = { verb, last_suffix, 'of', last_name }
+      elseif last_name then
+        words = { verb, last_name, 'by id' }
+      elseif last_suffix then
+        words = { verb, last_suffix }
+      end
+    else
+      if last_name then
+        words = { verb, last_name, 'by id'}
+      else
+        words = { verb, 'by id'}
+      end
+    end
+
+  else -- wildcard_length > 1
+
+    local previous_wildcard_pos = wildcard_positions[2]
+    local previous_name = previous_wildcard_pos and previous_wildcard_pos > 1 and tokens[previous_wildcard_pos - 1]
+
+    if previous_name then
+      words = {verb, last_name, 'of', previous_name }
+    else
+      words = {verb, last_name}
+    end
+
+  end
+
+  return table.concat(words, ' ')
 end
 
 function Operation:to_swagger()

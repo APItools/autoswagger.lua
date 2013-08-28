@@ -21,7 +21,7 @@ describe('API', function()
   end)
 
   describe('get_swagger_path', function()
-    it('#focus replaces wildcards with awesome names', function()
+    it('replaces wildcards with awesome names', function()
       local a = API:new({}, '/apis/*/accounts/*.xml')
       assert.equal(a:get_swagger_path(), '/apis/{api_id}/accounts/{account_id}.xml')
     end)

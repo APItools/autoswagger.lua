@@ -138,6 +138,20 @@ local make_id = function(str)
   return singularize(tostring(str)) .. "_id"
 end
 
+local titleize_aux = function(first, rest)
+  return (first or ""):upper() .. (rest or ""):lower()
+end
+
+local titleize = function(str)
+  local words = split(str, ' ')
+  local buffer, length = {}, 0
+  for _,word in ipairs(words) do
+    length = length + 1
+    buffer[length] = word:gsub("^(.)(.*)$", titleize_aux)
+  end
+  return table.concat(buffer, ' ')
+end
+
 local straux = {
   split               = split,
   begins_with         = begins_with,
@@ -145,7 +159,8 @@ local straux = {
   is_path_equivalent  = is_path_equivalent,
   parse_query         = parse_query,
   make_id             = make_id,
-  singularize         = singularize
+  singularize         = singularize,
+  titleize            = titleize
 }
 
 return straux
