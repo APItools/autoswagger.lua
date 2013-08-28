@@ -185,6 +185,7 @@ end
 ----------------------------------------
 
 local Host = {}
+local Hostmt = {__index = Host}
 
 function Host:new(hostname, threshold, unmergeable_tokens)
   return setmetatable({
@@ -194,9 +195,7 @@ function Host:new(hostname, threshold, unmergeable_tokens)
     root                = {},
     score               = {},
     apis                = {}
-  }, {
-    __index = Host
-  })
+  }, Hostmt)
 end
 
 function Host:match(path)

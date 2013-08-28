@@ -5,6 +5,7 @@ local array  = require(PATH .. '.array')
 local Host   = require(PATH .. '.Host')
 
 local Brain = {}
+local Brainmt = {__index = Brain}
 
 local function get_or_create_host(self, hostname)
   self.hosts[hostname] = self.hosts[hostname] or
@@ -17,9 +18,7 @@ function Brain:new(threshold, unmergeable_tokens)
     threshold          = threshold          or 1.0,
     unmergeable_tokens = unmergeable_tokens or {},
     hosts              = {}
-  }, {
-    __index = Brain
-  })
+  }, Brainmt)
 end
 
 function Brain:get_hostnames()

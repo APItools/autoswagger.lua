@@ -8,6 +8,7 @@ local PATH = (...):match("(.+%.)[^%.]+$") or ""
   local WILDCARD = base.WILDCARD
 
   local API = {}
+  local APImt = {__index = API}
 
   function API:new(host, path)
     return setmetatable({
@@ -15,9 +16,7 @@ local PATH = (...):match("(.+%.)[^%.]+$") or ""
       path = path,
       tokens = straux.tokenize(path),
       operations = {}
-    }, {
-      __index = API
-    })
+    }, APImt)
   end
 
   function API:add_operation_info(method, path, query, body, headers)

@@ -1,6 +1,8 @@
-local Parameter = {}
 
 local MAX_VALUES_STORED = 3
+
+local Parameter = {}
+local Parametermt = {__index = Parameter}
 
 function Parameter:new(operation, kind, name)
   return setmetatable({
@@ -8,9 +10,7 @@ function Parameter:new(operation, kind, name)
     kind = kind,
     name = name,
     values = {}
-  }, {
-    __index = Parameter
-  })
+  }, Parametermt)
 end
 
 function Parameter:add_value(value)

@@ -8,15 +8,14 @@ local base        = require(PATH .. 'base')
 local WILDCARD = base.WILDCARD
 
 local Operation = {}
+local Operationmt = {__index = Operation}
 
 function Operation:new(api, method)
   return setmetatable({
     api    = api,
     method = method,
     parameters = {}
-  }, {
-    __index = Operation
-  })
+  }, Operationmt)
 end
 
 function Operation:parse_path_parameters(path)
