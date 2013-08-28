@@ -88,7 +88,7 @@ local function refresh_apis(self)
     end
   end
   for _,path in ipairs(valid_paths) do
-    self.apis[path] = self.apis[path] or API.new(self, path)
+    self.apis[path] = self.apis[path] or API:new(self, path)
   end
 end
 
@@ -186,7 +186,7 @@ end
 
 local Host = {}
 
-Host.new = function(hostname, threshold, unmergeable_tokens)
+function Host:new(hostname, threshold, unmergeable_tokens)
   return setmetatable({
     threshold           = threshold          or 1.0,
     unmergeable_tokens  = unmergeable_tokens or {},

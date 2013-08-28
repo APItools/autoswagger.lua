@@ -2,7 +2,7 @@ local Parameter = {}
 
 local MAX_VALUES_STORED = 3
 
-function Parameter.new(operation, kind, name)
+function Parameter:new(operation, kind, name)
   return setmetatable({
     operation = operation,
     kind = kind,

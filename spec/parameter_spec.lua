@@ -4,7 +4,7 @@ describe('Parameter', function()
 
   it('can be created', function()
     local o = {}
-    local p = Parameter.new(o, 'query', 'user_id')
+    local p = Parameter:new(o, 'query', 'user_id')
     assert.equal(p.operation, o)
     assert.equal(p.kind, 'query')
     assert.equal(p.name, 'user_id')
@@ -12,12 +12,12 @@ describe('Parameter', function()
 
   describe(':add_value', function()
     it('accepts values', function()
-      local p = Parameter.new({}, 'query', 'user_id')
+      local p = Parameter:new({}, 'query', 'user_id')
       p:add_value('peter')
       assert.same(p.values, {'peter'})
     end)
     it('discards older values if there are more than 3', function()
-      local p = Parameter.new({}, 'query', 'user_id')
+      local p = Parameter:new({}, 'query', 'user_id')
       p:add_value('peter')
       p:add_value('marcus')
       p:add_value('john')
@@ -28,7 +28,7 @@ describe('Parameter', function()
 
   describe(':to_swagger', function()
     it('returns the swagger of 1 parameter', function()
-      local p = Parameter.new({}, 'query', 'user_id')
+      local p = Parameter:new({}, 'query', 'user_id')
       assert.same(p:to_swagger(), {
         name = 'user_id',
         paramType = 'query',

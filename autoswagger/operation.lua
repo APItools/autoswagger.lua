@@ -9,7 +9,7 @@ local WILDCARD = base.WILDCARD
 
 local Operation = {}
 
-function Operation.new(api, method)
+function Operation:new(api, method)
   return setmetatable({
     api    = api,
     method = method,
@@ -71,7 +71,7 @@ function Operation:add_parameters(kind, parameters)
 end
 
 function Operation:add_parameter(kind, name, value)
-  self.parameters[name] = self.parameters[name] or Parameter.new(self, kind, name)
+  self.parameters[name] = self.parameters[name] or Parameter:new(self, kind, name)
   local p = self.parameters[name]
 
   p.kind = kind

@@ -6,7 +6,7 @@ local Host   = require(PATH .. '.Host')
 
 local Parser = {}
 
-Parser.new = function(threshold, unmergeable_tokens)
+function Parser:new(threshold, unmergeable_tokens)
   return setmetatable({
     threshold          = threshold          or 1.0,
     unmergeable_tokens = unmergeable_tokens or {},
@@ -18,7 +18,7 @@ end
 
 function Parser:newHost(hostname)
   self.hosts[hostname] = self.hosts[hostname] or
-    Host.new(hostname, self.threshold, self.unmergeable_tokens)
+    Host:new(hostname, self.threshold, self.unmergeable_tokens)
   return self.hosts[hostname]
 end
 

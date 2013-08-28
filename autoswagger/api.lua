@@ -1,29 +1,29 @@
 local PATH = (...):match("(.+%.)[^%.]+$") or ""
 
-local straux     = require(PATH .. 'straux')
-local base       = require(PATH .. 'base')
-local array      = require(PATH .. 'array')
-local Operation  = require(PATH .. 'operation')
+  local straux     = require(PATH .. 'straux')
+  local base       = require(PATH .. 'base')
+  local array      = require(PATH .. 'array')
+  local Operation  = require(PATH .. 'operation')
 
-local WILDCARD = base.WILDCARD
+  local WILDCARD = base.WILDCARD
 
-local API = {}
+  local API = {}
 
-function API.new(host, path)
-  return setmetatable({
-    host = host,
-    path = path,
-    tokens = straux.tokenize(path),
-    operations = {}
-  }, {
-    __index = API
-  })
-end
+  function API:new(host, path)
+    return setmetatable({
+      host = host,
+      path = path,
+      tokens = straux.tokenize(path),
+      operations = {}
+    }, {
+      __index = API
+    })
+  end
 
-function API:add_operation_info(method, path, query, body, headers)
-  method   = string.upper(method)
+  function API:add_operation_info(method, path, query, body, headers)
+    method   = string.upper(method)
 
-  self.operations[method] = self.operations[method] or Operation.new(self, method)
+    self.operations[method] = self.operations[method] or Operation:new(self, method)
   self.operations[method]:add_parameter_info(path, query, body, headers)
 end
 

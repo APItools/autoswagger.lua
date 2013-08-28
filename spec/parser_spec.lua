@@ -3,7 +3,7 @@ local Parser = as.Parser
 local EOL    = as.EOL
 
 local function create_path_finder_1()
-  local g = Parser.new()
+  local g = Parser:new()
 
   g:learn("GET","google.com","/users/foo/activate.xml")
   g:learn("GET","google.com","/applications/foo/activate.xml")
@@ -51,7 +51,7 @@ describe('Parser', function()
     end)
 
     it('adds new paths only when they are really new', function()
-      local g = Parser.new()
+      local g = Parser:new()
 
       g:learn("GET","google.com","/users/foo/activate.xml")
       assert.same( {"/users/foo/activate.xml"}, g:get_paths('google.com'))
@@ -109,7 +109,7 @@ describe('Parser', function()
     end)
 
     it('can handle edge cases', function()
-      local g = Parser.new()
+      local g = Parser:new()
 
       g:learn("GET","google.com","/services/foo6/activate.xml")
       g:learn("GET","google.com","/services/foo7/activate.xml")
@@ -140,7 +140,7 @@ describe('Parser', function()
   end)
 
   it('unifies paths', function()
-    local g = Parser.new()
+    local g = Parser:new()
 
     g:learn("GET","google.com","/services/foo6/activate.xml")
     g:learn("GET","google.com","/services/foo6/deactivate.xml")
@@ -205,7 +205,7 @@ describe('Parser', function()
   end)
 
   it('compresses paths (again)', function()
-    local g = Parser.new()
+    local g = Parser:new()
 
     g:learn("GET","google.com","/admin/api/features.xml")
     g:learn("GET","google.com","/admin/api/applications.xml")
@@ -225,7 +225,7 @@ describe('Parser', function()
 
   it('compresses in even more cases', function()
 
-    local g = Parser.new()
+    local g = Parser:new()
 
     g:learn("GET","google.com","/admin/api/features.xml")
     g:learn("GET","google.com","/admin/api/applications.xml")
@@ -242,7 +242,7 @@ describe('Parser', function()
       "/admin/xxx/*.xml"
     }, g:get_paths('google.com'))
 
-    g = Parser.new()
+    g = Parser:new()
 
     g:learn("GET","google.com","/admin/api/features.xml")
     g:learn("GET","google.com","/admin/xxx/features.xml")
