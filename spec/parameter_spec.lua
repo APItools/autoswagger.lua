@@ -29,10 +29,13 @@ describe('Parameter', function()
   describe(':to_swagger', function()
     it('returns the swagger of 1 parameter', function()
       local p = Parameter:new({}, 'query', 'user_id')
+      p:add_value('1')
+      p:add_value('2')
+      p:add_value('3')
       assert.same(p:to_swagger(), {
         name = 'user_id',
         paramType = 'query',
-        description = 'user_id',
+        description = "Possible values are: '1', '2', '3'" ,
         ['type'] = 'string',
         required = false
       })

@@ -485,13 +485,13 @@ describe('Host', function()
           parameters = {
             { paramType = 'path',
               name = 'app_id',
-              description = 'app_id',
+              description = "Possible values are: '8', '9', '10'",
               ['type'] = 'string',
               required = true
             },
             { paramType = 'path',
               name = 'user_id',
-              description = 'user_id',
+              description = "Possible values are: '8', '9', '10'",
               ['type'] = 'string',
               required = true
             }
