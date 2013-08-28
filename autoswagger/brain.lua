@@ -6,29 +6,30 @@ local Host   = require(PATH .. '.Host')
 
 local Brain = {}
 
-function Brain:new(threshold, unmergeable_tokens)
-  return setmetatable({
-    threshold          = threshold          or 1.0,
-    unmergeable_tokens = unmergeable_tokens or {},
-    hosts = {}
-  }, {
-    __index = Brain
-  })
-end
-
-function Brain:newHost(hostname)
+local function get_or_create_host(self, hostname)
   self.hosts[hostname] = self.hosts[hostname] or
     Host:new(hostname, self.threshold, self.unmergeable_tokens)
   return self.hosts[hostname]
 end
 
-function Brain:get_paths(hostname)
-  local host = self.hosts[hostname]
-  return host and host:get_paths() or {}
+function Brain:new(threshold, unmergeable_tokens)
+  return setmetatable({
+    threshold          = threshold          or 1.0,
+    unmergeable_tokens = unmergeable_tokens or {},
+    hosts              = {}
+  }, {
+    __index = Brain
+  })
+end
+
+function Brain:get_hostnames()
+  local names = {}
+  for name,_ in pairs(self.hosts) do names[#names + 1] = name end
+  return array.sort(names)
 end
 
 function Brain:learn(method, hostname, path, query, body, headers)
-  self:newHost(hostname):learn(method, path)
+  get_or_create_host(self, hostname):learn(method, path, query, body, headers)
 end
 
 return Brain

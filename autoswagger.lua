@@ -8,7 +8,7 @@ local Parameter = require(PATH .. 'autoswagger.parameter')
 
 return {
   EOL     = base.EOL,
-  Brain  = Brain,
+  Brain   = Brain,
   Host    = Host,
   API     = API,
   Param   = Parameter
