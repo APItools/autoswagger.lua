@@ -4,6 +4,23 @@ local array     = require(PATH .. 'array')
 
 local MAX_VALUES_STORED = 3
 
+
+local function to_s(value, appearances)
+  if type(value) == 'string' then return "'" .. tostring(value) .. "'" end
+  if type(value) ~= 'table' then return tostring(value) end
+
+  appearances = appearances or {}
+  if appearances[value] then return "{...}" end
+  appearances[value] = true
+
+  local items = {}
+  for k,v in pairs(value) do
+    array.append(items, {'[', to_s(k, appearances), '] = ', to_s(v, appearances)})
+  end
+
+  return '{' .. table.concat(items, ', ') .. '}'
+end
+
 local Parameter = {}
 local Parametermt = {__index = Parameter}
 
@@ -25,8 +42,8 @@ end
 
 function Parameter:get_description()
   if #self.values == 0 then return "No available value suggestions" end
-  local values_str = table.concat(self.values, "', '")
-  return "Possible values are: '" .. values_str .. "'"
+  local values_str = table.concat(array.map(self.values, to_s), ", ")
+  return "Possible values are: " .. values_str
 end
 
 function Parameter:is_required()
