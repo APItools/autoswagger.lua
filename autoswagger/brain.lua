@@ -31,4 +31,8 @@ function Brain:learn(method, hostname, path, query, body, headers)
   get_or_create_host(self, hostname):learn(method, path, query, body, headers)
 end
 
+function Brain:get_swagger(hostname)
+  return get_or_create_host(self, hostname):to_swagger()
+end
+
 return Brain
