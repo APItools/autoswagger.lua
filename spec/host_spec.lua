@@ -479,10 +479,11 @@ describe('Host', function()
         -- I'm dividing this in two because busted (stupidly) hides part of the output when there are
         -- mismatches on the asserts
         local expected_operation = {
-          method = 'GET',
-          nickname = 'get_app_of_users',
-          summary  = 'Get app of users',
-          notes    = 'Automatically generated Operation spec',
+          method     = 'GET',
+          httpMethod = 'GET',
+          nickname   = 'get_app_of_users',
+          summary    = 'Get app of users',
+          notes      = 'Automatically generated Operation spec',
           parameters = {
             { paramType = 'path',
               name = 'app_id',

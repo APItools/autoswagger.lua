@@ -187,7 +187,8 @@ function Operation:to_swagger()
   end
 
   return {
-    method      = self.method,
+    httpMethod  = self.method, -- old swagger spec
+    method      = self.method, -- new swagger spec
     nickname    = self:get_nickname(),
     summary     = self:get_summary(),
     notes       = 'Automatically generated Operation spec',
