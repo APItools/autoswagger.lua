@@ -3,6 +3,15 @@ local straux   = require(PATH .. 'straux')
 
 local array = {}
 
+local map = function(arr, f)
+  local result, length = {}, 0
+  for i=1, #arr do
+    length = length + 1
+    result[length] = f(arr[i])
+  end
+  return result
+end
+
 local choose = function(arr, f)
   local result, length = {}, 0
   for i=1, #arr do
@@ -63,12 +72,13 @@ local untokenize = function(tokens)
 end
 
 local array = {
-  includes = includes,
-  choose = choose,
-  sort = sort,
-  append = append,
-  copy = copy,
-  untokenize = untokenize
+  map         = map,
+  includes    = includes,
+  choose      = choose,
+  sort        = sort,
+  append      = append,
+  copy        = copy,
+  untokenize  = untokenize
 }
 
 return array
