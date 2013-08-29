@@ -20,7 +20,7 @@ Copy the `autoswagger` folder inside your app. Then:
     brain:learn('GET', 'google.com', '/users/4/app/2')
     brain:learn('GET', 'google.com', '/users/5/app/1')
 
-    brain.hosts['google.com']:get_swagger()
+    brain:get_swagger('google.com') -- returns the swagger spec that the brain has learned from google.com. It probably includes /users/{user_id}/app/{app_id} as an operation.
 
 specs
 =====
