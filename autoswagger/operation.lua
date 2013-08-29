@@ -65,8 +65,8 @@ end
 
 function Operation:parse_body_parameters(body, headers)
   if type(headers) == 'table' and headers['Content-Type'] == "application/x-www-form-urlencoded" then
-    if type(body) == 'table' then return 'body', body end
-    return 'body', straux.parse_query(body)
+    if type(body) == 'table' then return 'body',  body end
+    return 'body', {__body = body}
   else
     return 'query', {__body = body}
   end

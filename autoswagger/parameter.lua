@@ -4,7 +4,6 @@ local array     = require(PATH .. 'array')
 
 local MAX_VALUES_STORED = 3
 
-
 local function to_s(value, appearances)
   if type(value) == 'string' then return "'" .. tostring(value) .. "'" end
   if type(value) ~= 'table' then return tostring(value) end
@@ -34,15 +33,18 @@ function Parameter:new(operation, kind, name)
 end
 
 function Parameter:add_value(value)
-  self.values[#self.values + 1] = value
-  if #self.values > MAX_VALUES_STORED then
-    table.remove(self.values, 1)
+  value = to_s(value)
+  if not array.includes(self.values, value) then
+    self.values[#self.values + 1] = value
+    if #self.values > MAX_VALUES_STORED then
+      table.remove(self.values, 1)
+    end
   end
 end
 
 function Parameter:get_description()
   if #self.values == 0 then return "No available value suggestions" end
-  local values_str = table.concat(array.map(self.values, to_s), ", ")
+  local values_str = table.concat(self.values, ", ")
   return "Possible values are: " .. values_str
 end
 

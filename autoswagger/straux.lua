@@ -56,7 +56,9 @@ end
 
 -- inspired by https://github.com/golgote/neturl/blob/master/lib/net/url.lua
 local function parse_query(str)
-  str = str or {}
+  if type(str) == 'table' then return str end
+
+  str = str or ""
   local result = {}
   local keys
 
