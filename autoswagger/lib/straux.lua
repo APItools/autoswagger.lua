@@ -1,9 +1,7 @@
 local PATH = (...):match("(.+%.)[^%.]+$") or ""
 
-local base   = require(PATH .. 'base')
-
-local EOL      = base.EOL
-local WILDCARD = base.WILDCARD
+local EOL = setmetatable({}, {__tostring = function() return 'EOL' end})
+local WILDCARD = "*"
 
 local function split(str, delimiter)
   local result = {}
@@ -14,7 +12,7 @@ local function split(str, delimiter)
 end
 
 local function begins_with(str, prefix)
-  return str:sub(1, #prefix) == prefix
+  return string.sub(str, 1, #prefix) == prefix
 end
 
 local function tokenize(path)
@@ -155,6 +153,8 @@ local titleize = function(str)
 end
 
 local straux = {
+  EOL                 = EOL,
+  WILDCARD            = WILDCARD,
   split               = split,
   begins_with         = begins_with,
   tokenize            = tokenize,

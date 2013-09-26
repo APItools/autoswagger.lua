@@ -1,10 +1,11 @@
 local Host = require('autoswagger.host')
-local EOL  = require('autoswagger.base').EOL
+local EOL  = require('autoswagger.lib.straux').EOL
 
 local function create_host()
   local h = Host:new('google.com')
 
   h:learn("GET","/users/foo/activate.xml")
+
   h:learn("GET","/applications/foo/activate.xml")
 
   h:learn("GET","/applications/foo2/activate.xml")
@@ -68,7 +69,7 @@ describe('Host', function()
     end)
 
     it('adds new paths only when they are really new', function()
-      local h = Host:new()
+      local h = Host:new('google.com')
 
       h:learn("GET","/users/foo/activate.xml")
       assert.same( {"/users/foo/activate.xml"}, h:get_paths())
@@ -139,7 +140,7 @@ describe('Host', function()
     end)
 
     it('can handle edge cases', function()
-      local h = Host:new()
+      local h = Host:new('google.com')
 
       h:learn("GET","/services/foo6/activate.xml")
       h:learn("GET","/services/foo7/activate.xml")
@@ -473,7 +474,6 @@ describe('Host', function()
           h:learn('GET', '/users/' .. tostring(i) .. '/app/' .. tostring(i) .. '.xml')
         end
 
-
         local s = h:to_swagger()
 
         -- I'm dividing this in two because busted (stupidly) hides part of the output when there are
@@ -484,6 +484,7 @@ describe('Host', function()
           nickname   = 'get_app_of_users',
           summary    = 'Get app of users',
           notes      = 'Automatically generated Operation spec',
+          guid       = '150a5a10500e81586380b650f3814cbb',
           parameters = {
             { paramType = 'path',
               name = 'app_id',
@@ -508,9 +509,11 @@ describe('Host', function()
           apiVersion     = "1.0",
           swaggerVersion = "1.2",
           models         = {},
+          guid           = "1d5920f4b44b27a802bd77c4f0536f5a",
           apis = {
             { path        = "/users/{user_id}/app/{app_id}.xml",
               description = "Automatically generated API spec",
+              guid        = "e8f63a266f680d931d4eddba43361642"
             }
           }
         })

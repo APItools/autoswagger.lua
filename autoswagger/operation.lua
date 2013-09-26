@@ -1,11 +1,11 @@
 local PATH = (...):match("(.+%.)[^%.]+$") or ""
 
 local Parameter   = require(PATH .. 'parameter')
-local straux      = require(PATH .. 'straux')
-local array       = require(PATH .. 'array')
-local base        = require(PATH .. 'base')
+local array       = require(PATH .. 'lib.array')
+local straux      = require(PATH .. 'lib.straux')
+local md5         = require(PATH .. 'lib.md5')
 
-local WILDCARD = base.WILDCARD
+local WILDCARD = straux.WILDCARD
 
 local Operation = {}
 local Operationmt = {__index = Operation}
@@ -41,9 +41,10 @@ end
 
 function Operation:new(api, method)
   return setmetatable({
-    api    = api,
-    method = method,
-    parameters = {}
+    api        = api,
+    method     = method,
+    parameters = {},
+    guid       = md5.sumhexa(api.host.hostname .. api.path .. method)
   }, Operationmt)
 end
 
@@ -192,6 +193,7 @@ function Operation:to_swagger()
     nickname    = self:get_nickname(),
     summary     = self:get_summary(),
     notes       = 'Automatically generated Operation spec',
+    guid        = self.guid,
     parameters  = parameters
   }
 end

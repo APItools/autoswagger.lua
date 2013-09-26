@@ -1,12 +1,12 @@
 local PATH = (...):match("(.+%.)[^%.]+$") or ""
 
-local array     = require(PATH .. 'array')
-local straux    = require(PATH .. 'straux')
-local base      = require(PATH .. 'base')
-local API  = require(PATH .. 'api')
+local array     = require(PATH .. 'lib.array')
+local straux    = require(PATH .. 'lib.straux')
+local md5       = require(PATH .. 'lib.md5')
+local API       = require(PATH .. 'api')
 
-local EOL      = base.EOL
-local WILDCARD = base.WILDCARD
+local EOL      = straux.EOL
+local WILDCARD = straux.WILDCARD
 
 local function merge(t, other)
   for k,v in pairs(other) do
@@ -82,9 +82,9 @@ end
 
 local function refresh_apis(self)
   local valid_paths = self:get_paths()
-  for api, _ in pairs(self.apis) do
-    if not array.includes(valid_paths, api) then
-      self.apis[api] = nil
+  for api_path, _ in pairs(self.apis) do
+    if not array.includes(valid_paths, api_path) then
+      self.apis[api_path] = nil
     end
   end
   for _,path in ipairs(valid_paths) do
@@ -137,9 +137,10 @@ local function add_path(self, path)
   if length == 0 then
     insert_path(self, path)
     refresh_apis(self)
+    return path
   elseif length == 1 then
     increase_path_score(self, paths[1])
-    return true
+    return paths[1]
   else -- length > 1 => problem
     local min,max = math.huge, -math.huge
     local min_path, max_path
@@ -159,6 +160,7 @@ local function add_path(self, path)
     -- removes one path
     self:forget(min_path)
     refresh_apis(self)
+    return max_path
   end
 end
 
@@ -176,12 +178,6 @@ local function get_paths_recursive(self, node, prefix)
   return result
 end
 
-local function find_matching_api(self, path)
-  for api_path, api in pairs(self.apis) do
-    if straux.is_path_equivalent(path, api_path) then return api end
-  end
-end
-
 ----------------------------------------
 
 local Host = {}
@@ -194,7 +190,8 @@ function Host:new(hostname, threshold, unmergeable_tokens)
     hostname            = hostname,
     root                = {},
     score               = {},
-    apis                = {}
+    apis                = {},
+    guid                = md5.sumhexa(hostname)
   }, Hostmt)
 end
 
@@ -204,16 +201,33 @@ function Host:match(path)
   end)
 end
 
+function Host:find_api_by_equivalent_path(path)
+  for api_path, api in pairs(self.apis) do
+    if straux.is_path_equivalent(path, api_path) then return api end
+  end
+end
+
+function Host:find_apis_by_subpath(subpath)
+  local paths = array.choose(self:get_paths(), function(path)
+    return string.find(path, subpath, 1, true)
+  end)
+
+  return array.map(paths, function(path) return self.apis[path] end)
+end
+
 function Host:get_paths()
   return array.sort(get_paths_recursive(self, self.root, ""))
 end
 
 
 function Host:learn(method, path, query, body, headers)
-  add_path(self, path)
+  local api_path = add_path(self, path)
 
-  local api = find_matching_api(self, path)
+  local api = self:find_api_by_equivalent_path(path)
+
   api:add_operation_info(method, path, query, body, headers)
+
+  return api_path
 end
 
 function Host:forget(path)
@@ -255,6 +269,7 @@ function Host:to_swagger()
     apiVersion     = "1.0",
     swaggerVersion = "1.2",
     models         = {},
+    guid           = self.guid,
     apis           = swagger_apis
   }
 end

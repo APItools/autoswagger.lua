@@ -1,17 +1,12 @@
-local PATH = (...):match("(.+)%.[^%.]+$") or ""
+local PATH = (...):match("(.+%.)[^%.]+$") or ""
 
-local base   = require(PATH .. '.base')
-local array  = require(PATH .. '.array')
-local Host   = require(PATH .. '.Host')
+local Host   = require(PATH .. 'host')
+local array  = require(PATH .. 'lib.array')
 
 local Brain = {}
 local Brainmt = {__index = Brain}
 
-local function get_or_create_host(self, hostname)
-  self.hosts[hostname] = self.hosts[hostname] or
-    Host:new(hostname, self.threshold, self.unmergeable_tokens)
-  return self.hosts[hostname]
-end
+
 
 function Brain:new(threshold, unmergeable_tokens)
   return setmetatable({
@@ -28,11 +23,17 @@ function Brain:get_hostnames()
 end
 
 function Brain:learn(method, hostname, path, query, body, headers)
-  get_or_create_host(self, hostname):learn(method, path, query, body, headers)
+  return self:get_or_create_host(hostname):learn(method, path, query, body, headers)
 end
 
 function Brain:get_swagger(hostname)
-  return get_or_create_host(self, hostname):to_swagger()
+  return self:get_or_create_host(hostname):to_swagger()
+end
+
+function Brain:get_or_create_host(hostname)
+  self.hosts[hostname] = self.hosts[hostname] or
+    Host:new(hostname, self.threshold, self.unmergeable_tokens)
+  return self.hosts[hostname]
 end
 
 return Brain

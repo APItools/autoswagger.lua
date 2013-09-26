@@ -1,4 +1,4 @@
-local array = require 'autoswagger.array'
+local array = require 'autoswagger.lib.array'
 
 describe('array', function()
   describe('.untokenize', function()

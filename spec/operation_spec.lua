@@ -3,7 +3,7 @@ local Operation = require 'autoswagger.operation'
 
 describe('Operation', function()
   it('can be created', function()
-    local api = {}
+    local api = {host={hostname='google.com'}, path = '/foo'}
     local o = Operation:new(api, 'GET')
     assert.equals(o.method, 'GET')
     assert.equals(o.api, api)
@@ -11,7 +11,7 @@ describe('Operation', function()
 
   describe(':parse_path_parameters', function()
     it('reads the parameters of a given path, using its api', function()
-      local api = API:new({}, '/applications/*/users/*')
+      local api = API:new({hostname='google.com'}, '/applications/*/users/*')
       local o = Operation:new(api, 'GET')
 
       local params = o:parse_path_parameters('/applications/1/users/2')
@@ -21,7 +21,7 @@ describe('Operation', function()
 
   describe(':add_parameter_info', function()
     it('reads params from the path', function()
-      local api = API:new({}, '/users/*/app/*.xml')
+      local api = API:new({hostname='google.com'}, '/users/*/app/*.xml')
       local o = Operation:new(api, 'GET')
 
       for i=1,5 do
@@ -35,7 +35,7 @@ describe('Operation', function()
 
   describe(':get_summary', function()
     local function test_summary(method, path, result)
-      local api = API:new({}, path)
+      local api = API:new({hostname = 'google.com'}, path)
       assert.equal(Operation:new(api, method):get_summary(), result)
     end
 

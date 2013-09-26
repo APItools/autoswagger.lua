@@ -1,7 +1,5 @@
-local straux = require 'autoswagger.straux'
-local base = require 'autoswagger.base'
-
-local EOL = base.EOL
+local straux = require 'autoswagger.lib.straux'
+local EOL = straux.EOL
 
 describe('straux', function()
 
@@ -11,6 +9,13 @@ describe('straux', function()
 
       assert.same({'users', '1', 'app', '1', '.xml', EOL},
          t('/users/1/app/1.xml'))
+    end)
+  end)
+
+  describe('begins_with', function()
+    it('returns whether a string begins with a prefix or not', function()
+      assert.is_true(straux.begins_with('banana', 'ban'))
+      assert.is_false(straux.begins_with('banana', 'lol'))
     end)
   end)
 

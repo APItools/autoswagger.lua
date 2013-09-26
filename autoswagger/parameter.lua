@@ -1,6 +1,7 @@
 local PATH = (...):match("(.+%.)[^%.]+$") or ""
 
-local array     = require(PATH .. 'array')
+local array     = require(PATH .. 'lib.array')
+local md5       = require(PATH .. 'lib.md5')
 
 local MAX_VALUES_STORED = 3
 
@@ -12,9 +13,18 @@ local function to_s(value, appearances)
   if appearances[value] then return "{...}" end
   appearances[value] = true
 
+  local keys, len = {}, 0
+  for k,_ in pairs(value) do
+    len = len + 1
+    keys[len] = k
+  end
+  table.sort(keys, function(a,b) return to_s(a) < to_s(b) end)
+
   local items = {}
-  for k,v in pairs(value) do
-    array.append(items, {'[', to_s(k, appearances), '] = ', to_s(v, appearances)})
+  for i=1, len do
+    local k = keys[i]
+    local v = value[k]
+    items[i] = '[' .. to_s(k, appearances) .. '] = ' .. to_s(v, appearances)
   end
 
   return '{' .. table.concat(items, ', ') .. '}'
