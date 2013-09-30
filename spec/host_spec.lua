@@ -187,7 +187,7 @@ describe('Host', function()
       })
 
       -- never merge
-      h = Host:new('google.com', 0.0)
+      h = Host:new('google.com', nil, 0.0)
 
       h:learn("GET","/services/foo6/activate.xml")
       h:learn("GET","/services/foo6/deactivate.xml")
@@ -205,7 +205,7 @@ describe('Host', function()
         "/services/foo8/deactivate.xml"
       })
 
-      h = Host:new('google.com', 0.2)
+      h = Host:new('google.com', nil, 0.2)
       -- fake the score so that the words that are not var are seen more often
       -- the threshold 0.2 means that only merge if word is 5 (=1/0.2) times less frequent
       -- than the most common word
@@ -250,7 +250,7 @@ describe('Host', function()
     })
 
     -- with unmergeable tokens
-    h = Host:new('google.com', 1.0, {"activate", "deactivate"})
+    h = Host:new('google.com', nil, 1.0, {"activate", "deactivate"})
 
     h:learn("GET","/services/foo6/activate.xml")
     h:learn("GET","/services/foo6/deactivate.xml")
@@ -271,6 +271,14 @@ describe('Host', function()
       "/services/*/deactivate.xml"
     })
 
+  end)
+
+  it('understands basepath', function()
+    local h = Host:new('google.com')
+    assert.equal(h.base_path, 'google.com')
+
+    local h = Host:new('google.com', 'http://google.com')
+    assert.equal(h.base_path, 'http://google.com')
   end)
 
   it('unifies paths', function()
@@ -506,6 +514,7 @@ describe('Host', function()
         s.apis[1].operations = nil
 
         assert.same(s, {
+          basePath       = "google.com",
           apiVersion     = "1.0",
           swaggerVersion = "1.2",
           models         = {},
@@ -520,6 +529,46 @@ describe('Host', function()
       end)
     end)
 
+  end)
+
+  describe('from_swagger', function()
+    it('rebuilds a brain using its swagger spec', function()
+      local h = Host:new_from_swagger({
+        apiVersion     = "1.0",
+        swaggerVersion = "1.2",
+        models         = {},
+        guid           = "1d5920f4b44b27a802bd77c4f0536f5a",
+        apis = {
+          { path        = "/users/{user_id}/app/{app_id}.xml",
+            description = "Automatically generated API spec",
+            guid        = "e8f63a266f680d931d4eddba43361642",
+            operations  = {
+              { method     = 'GET',
+                httpMethod = 'GET',
+                nickname   = 'get_app_of_users',
+                summary    = 'Get app of users',
+                notes      = 'Automatically generated Operation spec',
+                guid       = '150a5a10500e81586380b650f3814cbb',
+                parameters = {
+                  { paramType = 'path',
+                    name = 'app_id',
+                    description = "Possible values are: '8', '9', '10'",
+                    ['type'] = 'string',
+                    required = true
+                  },
+                  { paramType = 'path',
+                    name = 'user_id',
+                    description = "Possible values are: '8', '9', '10'",
+                    ['type'] = 'string',
+                    required = true
+                  }
+                }
+              }
+            }
+          }
+        }
+      })
+    end)
   end)
 
 
