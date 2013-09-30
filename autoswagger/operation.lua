@@ -44,7 +44,7 @@ function Operation:new(api, method)
     api        = api,
     method     = method,
     parameters = {},
-    guid       = md5.sumhexa(api.host.hostname .. api.path .. method)
+    guid       = md5.sumhexa(api.host.base_path .. api.path .. method)
   }, Operationmt)
 end
 

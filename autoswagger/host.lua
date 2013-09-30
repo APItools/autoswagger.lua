@@ -184,15 +184,16 @@ local Host = {}
 local Hostmt = {__index = Host}
 
 function Host:new(hostname, base_path, threshold, unmergeable_tokens)
+  base_path = base_path or hostname
   return setmetatable({
     threshold           = threshold          or 1.0,
     unmergeable_tokens  = unmergeable_tokens or {},
     hostname            = hostname,
-    base_path           = base_path or hostname,
+    base_path           = base_path,
     root                = {},
     score               = {},
     apis                = {},
-    guid                = md5.sumhexa(hostname)
+    guid                = md5.sumhexa(base_path)
   }, Hostmt)
 end
 
@@ -269,6 +270,7 @@ function Host:to_swagger()
   return {
     apiVersion     = "1.0",
     swaggerVersion = "1.2",
+    hostname       = self.hostname,
     basePath       = self.base_path,
     models         = {},
     guid           = self.guid,
@@ -277,11 +279,17 @@ function Host:to_swagger()
 end
 
 function Host:new_from_swagger(swagger)
-  if type(swagger) ~= 'table' or type(swagger.apis) ~= 'table' then return false end
-  for _,api_swagger in ipairs(swagger.apis) do
+  if type(swagger) ~= 'table' or type(swagger.basePath) ~= 'string' then return nil end
+
+  local hostname = swagger.hostname or swagger.basePath
+
+  local host = Host:new(hostname, swagger.basePath)
+
+  for _,api_swagger in ipairs(swagger.apis or {}) do
 
   end
 
+  return host
 end
 
 

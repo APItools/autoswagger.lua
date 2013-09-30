@@ -16,7 +16,7 @@ function API:new(host, path)
     path = path,
     tokens = straux.tokenize(path),
     operations = {},
-    guid = md5.sumhexa(host.hostname .. path)
+    guid = md5.sumhexa(host.base_path .. path)
   }, APImt)
 end
 

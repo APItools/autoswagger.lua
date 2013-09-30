@@ -476,7 +476,7 @@ describe('Host', function()
 
     describe('to_swagger', function()
       it('returns a table with the swagger spec corresponding to the host', function()
-        local h = Host:new('google.com')
+        local h = Host:new('localhost', 'http://google.com')
 
         for i=1,10 do
           h:learn('GET', '/users/' .. tostring(i) .. '/app/' .. tostring(i) .. '.xml')
@@ -492,7 +492,7 @@ describe('Host', function()
           nickname   = 'get_app_of_users',
           summary    = 'Get app of users',
           notes      = 'Automatically generated Operation spec',
-          guid       = '150a5a10500e81586380b650f3814cbb',
+          guid       = 'c75b5c3d46a01e4a3677da7968147dd6',
           parameters = {
             { paramType = 'path',
               name = 'app_id',
@@ -514,15 +514,16 @@ describe('Host', function()
         s.apis[1].operations = nil
 
         assert.same(s, {
-          basePath       = "google.com",
+          hostname       = "localhost",
+          basePath       = "http://google.com",
           apiVersion     = "1.0",
           swaggerVersion = "1.2",
           models         = {},
-          guid           = "1d5920f4b44b27a802bd77c4f0536f5a",
+          guid           = "c7b920f57e553df2bb68272f61570210",
           apis = {
             { path        = "/users/{user_id}/app/{app_id}.xml",
               description = "Automatically generated API spec",
-              guid        = "e8f63a266f680d931d4eddba43361642"
+              guid        = "81869c4caaedb459732c089621e27f63"
             }
           }
         })
@@ -536,12 +537,14 @@ describe('Host', function()
       local h = Host:new_from_swagger({
         apiVersion     = "1.0",
         swaggerVersion = "1.2",
+        hostname       = "localhost",
+        basePath       = "foo.com",
         models         = {},
         guid           = "1d5920f4b44b27a802bd77c4f0536f5a",
         apis = {
           { path        = "/users/{user_id}/app/{app_id}.xml",
             description = "Automatically generated API spec",
-            guid        = "e8f63a266f680d931d4eddba43361642",
+            guid        = "",
             operations  = {
               { method     = 'GET',
                 httpMethod = 'GET',
@@ -568,6 +571,9 @@ describe('Host', function()
           }
         }
       })
+
+      assert.equal(h.hostname, 'localhost')
+      assert.equal(h.base_path, 'foo.com')
     end)
   end)
 

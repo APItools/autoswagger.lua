@@ -30,9 +30,9 @@ function Brain:get_swagger(hostname)
   return self:get_or_create_host(hostname):to_swagger()
 end
 
-function Brain:get_or_create_host(hostname)
+function Brain:get_or_create_host(hostname, base_path)
   self.hosts[hostname] = self.hosts[hostname] or
-    Host:new(hostname, self.threshold, self.unmergeable_tokens)
+    Host:new(hostname, base_path, self.threshold, self.unmergeable_tokens)
   return self.hosts[hostname]
 end
 
