@@ -14,7 +14,7 @@ describe('Parameter', function()
     it('accepts values', function()
       local p = Parameter:new({}, 'query', 'user_id')
       p:add_value('peter')
-      assert.same(p.values, {"'peter'"})
+      assert.same(p.values, {'peter'})
     end)
     it('discards older values if there are more than 3', function()
       local p = Parameter:new({}, 'query', 'user_id')
@@ -22,12 +22,12 @@ describe('Parameter', function()
       p:add_value('marcus')
       p:add_value('john')
       p:add_value('lucas')
-      assert.same(p.values, {"'marcus'", "'john'", "'lucas'"})
+      assert.same(p.values, {'marcus', 'john', 'lucas'})
     end)
     it('converts tables to strings', function()
       local p = Parameter:new({}, 'query', 'body')
       p:add_value({1,2,3, a=4})
-      assert.same(p.values, {"{['a'] = 4, [1] = 1, [2] = 2, [3] = 3}"})
+      assert.same(p.string_values, {"{['a'] = 4, [1] = 1, [2] = 2, [3] = 3}"})
     end)
   end)
 
@@ -41,6 +41,7 @@ describe('Parameter', function()
         name = 'user_id',
         paramType = 'query',
         description = "Possible values are: '1', '2', '3'" ,
+        possible_values = {'1', '2', '3'},
         ['type'] = 'string',
         required = false
       })
@@ -63,7 +64,7 @@ describe('Parameter', function()
 
       assert.equal(p.name, 'user_id')
       assert.equal(p.kind, 'query')
-      assert.same(p.values, {'1', '2', '3'})
+      assert.same(p.values, {1, 2, 3})
     end)
   end)
 

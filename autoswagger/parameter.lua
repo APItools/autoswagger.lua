@@ -6,7 +6,7 @@ local md5       = require(PATH .. 'lib.md5')
 local MAX_VALUES_STORED = 3
 
 local function to_s(value, appearances)
-  if type(value) == 'string' then return "'" .. tostring(value) .. "'" end
+  if type(value) == 'string' then return "'" .. value .. "'" end
   if type(value) ~= 'table' then return tostring(value) end
 
   appearances = appearances or {}
@@ -38,24 +38,27 @@ function Parameter:new(operation, kind, name)
     operation = operation,
     kind = kind,
     name = name,
-    values = {}
+    values = {},
+    string_values = {}
   }, Parametermt)
 end
 
 function Parameter:add_value(value)
-  value = to_s(value)
-  if not array.includes(self.values, value) then
-    self.values[#self.values + 1] = value
-    if #self.values > MAX_VALUES_STORED then
+  local string_value = to_s(value)
+  if not array.includes(self.string_values, string_value) then
+    local len = #self.values
+    self.values[len + 1]        = value
+    self.string_values[len + 1] = string_value
+    if len == MAX_VALUES_STORED then
       table.remove(self.values, 1)
+      table.remove(self.string_values, 1)
     end
   end
 end
 
 function Parameter:get_description()
   if #self.values == 0 then return "No available value suggestions" end
-  local values_str = table.concat(self.values, ", ")
-  return "Possible values are: " .. values_str
+  return "Possible values are: " .. table.concat(self.string_values, ", ")
 end
 
 function Parameter:is_required()
@@ -67,6 +70,7 @@ function Parameter:to_swagger()
     paramType   = self.kind,
     name        = self.name,
     description = self:get_description(),
+    possible_values = self.values,
     required    = self:is_required(),
     ['type']    = 'string'
   }
