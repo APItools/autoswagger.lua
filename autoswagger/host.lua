@@ -274,19 +274,29 @@ function Host:to_swagger()
     basePath       = self.base_path,
     models         = {},
     guid           = self.guid,
-    apis           = swagger_apis
+    apis           = swagger_apis,
+    root           = self.root
   }
 end
 
 function Host:new_from_swagger(swagger)
-  if type(swagger) ~= 'table' or type(swagger.basePath) ~= 'string' then return nil end
+  if type(swagger) ~= 'table' or type(swagger.basePath) ~= 'string' then
+    error('swagger and swagger.basePath must exist')
+  end
 
   local hostname = swagger.hostname or swagger.basePath
 
   local host = Host:new(hostname, swagger.basePath)
 
-  for _,api_swagger in ipairs(swagger.apis or {}) do
+  if type(swagger.root) == 'table' then
+    host.root = swagger.root
+  end
 
+  if type(swagger.apis) == 'table' then
+    for _,api_swagger in ipairs(swagger.apis) do
+      local api = API:new_from_swagger(host, api_swagger)
+      host.apis[api.path] = api
+    end
   end
 
   return host

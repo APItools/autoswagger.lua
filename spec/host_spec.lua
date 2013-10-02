@@ -523,6 +523,7 @@ describe('Host', function()
           swaggerVersion = "1.2",
           models         = {},
           guid           = "c7b920f57e553df2bb68272f61570210",
+          root           = h.root,
           apis = {
             { path        = "/users/{user_id}/app/{app_id}.xml",
               description = "Automatically generated API spec",
@@ -537,13 +538,26 @@ describe('Host', function()
 
   describe('from_swagger', function()
     it('rebuilds a brain using its swagger spec', function()
-      local h = Host:new_from_swagger({
+      local swagger = {
         apiVersion     = "1.0",
         swaggerVersion = "1.2",
         hostname       = "localhost",
         basePath       = "foo.com",
         models         = {},
         guid           = "1d5920f4b44b27a802bd77c4f0536f5a",
+        root           = {
+          users = {
+            ["*"] = {
+              app = {
+                ["*"] = {
+                  [".xml"] = {
+                    ___EOL___ = {}
+                  }
+                }
+              }
+            }
+          }
+        },
         apis = {
           { path        = "/users/{user_id}/app/{app_id}.xml",
             description = "Automatically generated API spec",
@@ -573,10 +587,16 @@ describe('Host', function()
             }
           }
         }
-      })
+      }
+
+      local h = Host:new_from_swagger(swagger)
 
       assert.equal(h.hostname, 'localhost')
       assert.equal(h.base_path, 'foo.com')
+
+      assert.same(h:get_paths(), {"/users/*/app/*.xml"})
+
+      assert.same(h.root, swagger.root)
     end)
   end)
 

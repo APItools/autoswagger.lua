@@ -1,6 +1,6 @@
 local PATH = (...):match("(.+%.)[^%.]+$") or ""
 
-local EOL = setmetatable({}, {__tostring = function() return 'EOL' end})
+local EOL = "___EOL___"
 local WILDCARD = "*"
 
 local function split(str, delimiter)
