@@ -79,4 +79,35 @@ describe('Operation', function()
       test_summary("DELETE", "/", "Delete")
     end)
   end)
+
+  describe(':new_from_swagger', function()
+    it('creates a new operation', function()
+      local swagger = {
+        method     = 'GET',
+        parameters = {
+          { paramType = 'path',
+            name = 'app_id',
+            description = "Possible values are: '8', '9', '10'",
+            possible_values = {'8', '9', '10'},
+            ['type'] = 'string',
+            required = true
+          },
+          { paramType = 'path',
+            name = 'user_id',
+            description = "Possible values are: '8', '9', '10'",
+            possible_values = {'8', '9', '10'},
+            ['type'] = 'string',
+            ['type'] = 'string',
+            required = true
+          }
+        }
+      }
+
+      local api =  API:new(Host:new('google.com'), '/foo')
+      local operation = Operation:new_from_swagger(api, swagger)
+
+      assert.equal(operation.method, 'GET')
+      assert.same(operation:get_parameter_names(), {'app_id', 'user_id'})
+    end)
+  end)
 end)

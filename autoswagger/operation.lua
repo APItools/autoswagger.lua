@@ -198,4 +198,21 @@ function Operation:to_swagger()
   }
 end
 
+function Operation:new_from_swagger(api, swagger)
+  if type(swagger) ~= 'table' or type(swagger.method) ~= 'string' then
+    error('swagger required with a method')
+  end
+
+  local operation = Operation:new(api, swagger.method)
+
+  if type(swagger.parameters) == 'table' then
+    for _,param_swagger in ipairs(swagger.parameters) do
+      local parameter = Parameter:new_from_swagger(self, param_swagger)
+      operation.parameters[parameter.name] = parameter
+    end
+  end
+
+  return operation
+end
+
 return Operation
