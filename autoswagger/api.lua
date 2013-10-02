@@ -10,6 +10,11 @@ local WILDCARD = straux.WILDCARD
 local API = {}
 local APImt = {__index = API}
 
+-- transforms /foo/{user_id}.xml into /foo/*.xml
+local function parse_swagger_path(swagger_path)
+  return swagger_path:gsub('{[^{}]+}', '*')
+end
+
 function API:new(host, path)
   return setmetatable({
     host = host,
@@ -64,6 +69,23 @@ function API:to_swagger()
     description = "Automatically generated API spec",
     operations  = operations
   }
+end
+
+function API:new_from_swagger(host, swagger)
+  if type(swagger) ~= 'table' or type(swagger.path) ~= 'string' then
+    error('the swagger parameter must be a table containig at least a path')
+  end
+
+  local api = API:new(host, parse_swagger_path(swagger.path))
+
+  if type(swagger.operations) == 'table' then
+    for _,operation_swagger in ipairs(swagger.operations) do
+      local operation = Operation:new_from_swagger(api, operation_swagger)
+      api.operations[operation.method] = operation
+    end
+  end
+
+  return api
 end
 
 return API

@@ -27,5 +27,42 @@ describe('API', function()
       assert.equal(a:get_swagger_path(), '/apis/{api_id}/accounts/{account_id}.xml')
     end)
   end)
+
+  describe('new_from_swagger', function()
+    it('creates a new api', function()
+      local swagger = {
+        path       = "/foo/bar/{user_id}.xml",
+        operations = {
+          { method = 'GET',
+            parameters = {
+              { paramType = 'path',
+                name = 'app_id',
+                description = "Possible values are: '8', '9', '10'",
+                possible_values = {'8', '9', '10'},
+                ['type'] = 'string',
+                required = true
+              }
+            }
+          },
+          { method = 'POST',
+            parameters = {
+              { paramType = 'path',
+                name = 'app_id',
+                description = "Possible values are: '8', '9', '10'",
+                possible_values = {'8', '9', '10'},
+                ['type'] = 'string',
+                required = true
+              }
+            }
+          }
+        }
+      }
+
+      local api = API:new_from_swagger(Host:new('google.com'), swagger)
+
+      assert.equal(api.path, '/foo/bar/*.xml')
+      assert.same(api:get_methods(), {'GET', 'POST'})
+    end)
+  end)
 end)
 
