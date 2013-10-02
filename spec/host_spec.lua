@@ -497,12 +497,15 @@ describe('Host', function()
             { paramType = 'path',
               name = 'app_id',
               description = "Possible values are: '8', '9', '10'",
+              possible_values = {'8', '9', '10'},
               ['type'] = 'string',
               required = true
             },
             { paramType = 'path',
               name = 'user_id',
               description = "Possible values are: '8', '9', '10'",
+              possible_values = {'8', '9', '10'},
+              ['type'] = 'string',
               ['type'] = 'string',
               required = true
             }
