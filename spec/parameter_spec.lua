@@ -48,4 +48,23 @@ describe('Parameter', function()
     end)
   end)
 
+  describe(':new_from_swagger', function()
+    it('transforms swagger into a param', function()
+      local swagger = {
+        name = 'user_id',
+        paramType = 'query',
+        description = "Possible values are: '1', '2', '3'" ,
+        possible_values   = {1,2,3},
+        ['type'] = 'string',
+        required = false
+      }
+
+      local p = Parameter:new_from_swagger({}, swagger)
+
+      assert.equal(p.name, 'user_id')
+      assert.equal(p.kind, 'query')
+      assert.same(p.values, {'1', '2', '3'})
+    end)
+  end)
+
 end)

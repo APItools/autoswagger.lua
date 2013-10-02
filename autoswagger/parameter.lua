@@ -72,6 +72,29 @@ function Parameter:to_swagger()
   }
 end
 
+function Parameter:new_from_swagger(operation, swagger)
+  if type(swagger) ~= 'table'
+  or type(swagger.paramType) ~= 'string'
+  or type(swagger.name) ~= 'string' then
+    error('swagger must exist and have proper paramType and name attributes')
+  end
+
+  local parameter = Parameter:new(operation, swagger.paramType, swagger.name)
+
+  if swagger.possible_values then
+    for _,v in ipairs(swagger.possible_values) do
+      parameter:add_value(v)
+    end
+  end
+
+  return parameter
+end
+
+
+
+
+
+
 
 
 return Parameter
