@@ -21,8 +21,8 @@ describe('Brain', function()
 
     it('creates a host when needed', function()
       local b = Brain:new()
-      b:learn('GET', 'google.com', '/foo/bar')
-      b:learn('GET', 'facebook.com', '/foo/bar')
+      b:learn('GET', 'google.com', 'http://google.com', '/foo/bar')
+      b:learn('GET', 'facebook.com', 'http://google.com', '/foo/bar')
       assert.same(b:get_hostnames(), {'facebook.com', 'google.com'})
     end)
 

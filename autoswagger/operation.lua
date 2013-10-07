@@ -39,12 +39,12 @@ local function get_tokens_without_EOL_or_extension(self)
   return result
 end
 
-function Operation:new(api, method)
+function Operation:new(api, method, guid)
   return setmetatable({
     api        = api,
     method     = method,
     parameters = {},
-    guid       = md5.sumhexa(api.host.base_path .. api.path .. method)
+    guid       = guid or md5.sumhexa(api.host.base_path .. api.path .. method)
   }, Operationmt)
 end
 
@@ -203,7 +203,7 @@ function Operation:new_from_swagger(api, swagger)
     error('swagger required with a method')
   end
 
-  local operation = Operation:new(api, swagger.method)
+  local operation = Operation:new(api, swagger.method, swagger.guid)
 
   if type(swagger.parameters) == 'table' then
     for _,param_swagger in ipairs(swagger.parameters) do

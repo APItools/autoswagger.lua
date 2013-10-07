@@ -183,7 +183,7 @@ end
 local Host = {}
 local Hostmt = {__index = Host}
 
-function Host:new(hostname, base_path, threshold, unmergeable_tokens)
+function Host:new(hostname, base_path, threshold, unmergeable_tokens, guid)
   base_path = base_path or hostname
   return setmetatable({
     threshold           = threshold          or 1.0,
@@ -193,7 +193,7 @@ function Host:new(hostname, base_path, threshold, unmergeable_tokens)
     root                = {},
     score               = {},
     apis                = {},
-    guid                = md5.sumhexa(base_path)
+    guid                = guid or md5.sumhexa(base_path)
   }, Hostmt)
 end
 
@@ -286,7 +286,7 @@ function Host:new_from_swagger(swagger)
 
   local hostname = swagger.hostname or swagger.basePath
 
-  local host = Host:new(hostname, swagger.basePath)
+  local host = Host:new(hostname, swagger.basePath, nil, nil, swagger.guid)
 
   if type(swagger.root) == 'table' then
     host.root = swagger.root

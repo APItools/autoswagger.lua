@@ -1,5 +1,8 @@
 local PATH = (...):match("(.+%.)[^%.]+$") or ""
 local Brain     = require(PATH .. 'brain')
+local Host      = require(PATH .. 'host')
+local Operation = require(PATH .. 'operation')
+local Parameter = require(PATH .. 'parameter')
 
 local autoswagger = {
   __VERSION     = 'autoswagger 0.5.0',
@@ -29,9 +32,11 @@ local autoswagger = {
     CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
     TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
     SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-  ]]
+  ]],
+  Brain     = Brain,
+  Host      = Host,
+  Operation = Operation,
+  Parameter = Parameter
 }
-
-autoswagger.Brain = Brain
 
 return autoswagger

@@ -22,8 +22,8 @@ function Brain:get_hostnames()
   return array.sort(names)
 end
 
-function Brain:learn(method, hostname, path, query, body, headers)
-  return self:get_or_create_host(hostname):learn(method, path, query, body, headers)
+function Brain:learn(method, hostname, base_path, path, query, body, headers)
+  return self:get_or_create_host(hostname, base_path):learn(method, path, query, body, headers)
 end
 
 function Brain:get_swagger(hostname)

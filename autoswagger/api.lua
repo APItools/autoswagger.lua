@@ -15,13 +15,13 @@ local function parse_swagger_path(swagger_path)
   return swagger_path:gsub('{[^{}]+}', '*')
 end
 
-function API:new(host, path)
+function API:new(host, path, guid)
   return setmetatable({
-    host = host,
-    path = path,
-    tokens = straux.tokenize(path),
-    operations = {},
-    guid = md5.sumhexa(host.base_path .. path)
+    host        = host,
+    path        = path,
+    tokens      = straux.tokenize(path),
+    operations  = {},
+    guid        = guid or md5.sumhexa(host.base_path .. path)
   }, APImt)
 end
 
@@ -76,7 +76,7 @@ function API:new_from_swagger(host, swagger)
     error('the swagger parameter must be a table containig at least a path')
   end
 
-  local api = API:new(host, parse_swagger_path(swagger.path))
+  local api = API:new(host, parse_swagger_path(swagger.path), swagger.guid)
 
   if type(swagger.operations) == 'table' then
     for _,operation_swagger in ipairs(swagger.operations) do
