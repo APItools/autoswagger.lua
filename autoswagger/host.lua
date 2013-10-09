@@ -178,6 +178,10 @@ local function get_paths_recursive(self, node, prefix)
   return result
 end
 
+local function initialize_guid(self)
+  self.guid  = self.guid or md5.sumhexa(self.base_path)
+end
+
 ----------------------------------------
 
 local Host = {}
@@ -266,7 +270,7 @@ function Host:to_swagger()
     swagger_apis[#swagger_apis + 1] = api:to_swagger()
   end
 
-  self.guid  = self.guid or md5.sumhexa(self.base_path)
+  initialize_guid(self)
 
   return {
     apiVersion     = "1.0",
@@ -275,27 +279,45 @@ function Host:to_swagger()
     basePath       = self.base_path,
     models         = {},
     guid           = self.guid,
-    apis           = swagger_apis,
-    root           = self.root
+    apis           = swagger_apis
   }
 end
 
-function Host:new_from_swagger(swagger)
-  if type(swagger) ~= 'table' or type(swagger.basePath) ~= 'string' then
-    error('swagger and swagger.basePath must exist')
+function Host:serialize()
+  local serialized_apis = {}
+  for _,api in pairs(self.apis) do
+    serialized_apis[#swagger_apis + 1] = api:serialize()
   end
 
-  local hostname = swagger.hostname or swagger.basePath
+  initialize_guid(self)
 
-  local host = Host:new(hostname, swagger.basePath, nil, nil, swagger.guid)
+  return {
+    hostname            = self.hostname,
+    basePath            = self.base_path,
+    threshold           = self.threshold,
+    unmergeable_tokens  = self.unmergeable_tokens,
+    guid                = self.guid,
+    apis                = serialized_apis,
+    root                = self.root
+  }
+end
 
-  if type(swagger.root) == 'table' then
-    host.root = swagger.root
+function Host:deserialize(tbl)
+  if type(tbl) ~= 'table' or type(tbl.basePath) ~= 'string' then
+    error('tbl and tbl.basePath must exist')
   end
 
-  if type(swagger.apis) == 'table' then
-    for _,api_swagger in ipairs(swagger.apis) do
-      local api = API:new_from_swagger(host, api_swagger)
+  local hostname = tbl.hostname or tbl.basePath
+
+  local host = Host:new(hostname, tbl.basePath, tbl.threshold, tbl.unmergeable_tokens, tbl.guid)
+
+  if type(tbl.root) == 'table' then
+    host.root = tbl.root
+  end
+
+  if type(tbl.apis) == 'table' then
+    for _,api_tbl in ipairs(tbl.apis) do
+      local api = API:deserialize(host, api_tbl)
       host.apis[api.path] = api
     end
   end

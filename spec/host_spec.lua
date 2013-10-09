@@ -497,14 +497,12 @@ describe('Host', function()
             { paramType = 'path',
               name = 'app_id',
               description = "Possible values are: '8', '9', '10'",
-              possible_values = {'8', '9', '10'},
               ['type'] = 'string',
               required = true
             },
             { paramType = 'path',
               name = 'user_id',
               description = "Possible values are: '8', '9', '10'",
-              possible_values = {'8', '9', '10'},
               ['type'] = 'string',
               ['type'] = 'string',
               required = true
@@ -523,7 +521,6 @@ describe('Host', function()
           swaggerVersion = "1.2",
           models         = {},
           guid           = "guid",
-          root           = h.root,
           apis = {
             { path        = "/users/{user_id}/app/{app_id}.xml",
               description = "Automatically generated API spec",
@@ -536,15 +533,12 @@ describe('Host', function()
 
   end)
 
-  describe('from_swagger', function()
-    it('rebuilds a brain using its swagger spec', function()
-      local swagger = {
-        apiVersion     = "1.0",
-        swaggerVersion = "1.2",
+  describe('deserialize', function()
+    it('rebuilds a brain using a table', function()
+      local tbl = {
         hostname       = "localhost",
         basePath       = "foo.com",
-        models         = {},
-        guid           = "1d5920f4b44b27a802bd77c4f0536f5a",
+        guid           = "lalala",
         root           = {
           users = {
             ["*"] = {
@@ -559,28 +553,19 @@ describe('Host', function()
           }
         },
         apis = {
-          { path        = "/users/{user_id}/app/{app_id}.xml",
-            description = "Automatically generated API spec",
-            guid        = "",
+          { path        = "/users/*/app/*.xml",
+            guid        = "lilili",
             operations  = {
               { method     = 'GET',
-                httpMethod = 'GET',
-                nickname   = 'get_app_of_users',
-                summary    = 'Get app of users',
-                notes      = 'Automatically generated Operation spec',
-                guid       = '150a5a10500e81586380b650f3814cbb',
+                guid       = 'lololo',
                 parameters = {
                   { paramType = 'path',
-                    name = 'app_id',
-                    description = "Possible values are: '8', '9', '10'",
-                    ['type'] = 'string',
-                    required = true
+                    name      = 'app_id',
+                    values    = {1,2,3}
                   },
                   { paramType = 'path',
-                    name = 'user_id',
-                    description = "Possible values are: '8', '9', '10'",
-                    ['type'] = 'string',
-                    required = true
+                    name      = 'user_id',
+                    values    = {1,2,3}
                   }
                 }
               }
@@ -589,14 +574,15 @@ describe('Host', function()
         }
       }
 
-      local h = Host:new_from_swagger(swagger)
+      local h = Host:deserialize(tbl)
 
       assert.equal(h.hostname, 'localhost')
       assert.equal(h.base_path, 'foo.com')
+      assert.equal(h.guid, 'lalala')
 
       assert.same(h:get_paths(), {"/users/*/app/*.xml"})
 
-      assert.same(h.root, swagger.root)
+      assert.same(h.root, tbl.root)
     end)
   end)
 
