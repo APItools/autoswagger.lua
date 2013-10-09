@@ -31,19 +31,16 @@ describe('API', function()
     end)
   end)
 
-  describe('new_from_swagger', function()
+  describe('deserialize', function()
     it('creates a new api', function()
-      local swagger = {
-        path       = "/foo/bar/{user_id}.xml",
+      local tbl = {
+        path       = "/foo/bar/*.xml",
         operations = {
           { method = 'GET',
             parameters = {
               { paramType = 'path',
                 name = 'app_id',
-                description = "Possible values are: '8', '9', '10'",
-                possible_values = {'8', '9', '10'},
-                ['type'] = 'string',
-                required = true
+                values = {'8', '9', '10'}
               }
             }
           },
@@ -51,17 +48,14 @@ describe('API', function()
             parameters = {
               { paramType = 'path',
                 name = 'app_id',
-                description = "Possible values are: '8', '9', '10'",
-                possible_values = {'8', '9', '10'},
-                ['type'] = 'string',
-                required = true
+                possible_values = {'8', '9', '10'}
               }
             }
           }
         }
       }
 
-      local api = API:new_from_swagger(host, swagger)
+      local api = API:deserialize(host, tbl)
 
       assert.equal(api.path, '/foo/bar/*.xml')
       assert.same(api:get_methods(), {'GET', 'POST'})

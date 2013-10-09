@@ -10,9 +10,8 @@ local WILDCARD = straux.WILDCARD
 local API = {}
 local APImt = {__index = API}
 
--- transforms /foo/{user_id}.xml into /foo/*.xml
-local function parse_swagger_path(swagger_path)
-  return swagger_path:gsub('{[^{}]+}', '*')
+local function  initialize_guid(self)
+  self.guid = self.guid or md5.sumhexa(self.host.base_path .. self.path)
 end
 
 function API:new(host, path, guid)
@@ -63,7 +62,7 @@ function API:to_swagger()
     operations[#operations + 1] = self.operations[method]:to_swagger()
   end
 
-  self.guid = self.guid or md5.sumhexa(self.host.base_path .. self.path)
+  initialize_guid(self)
 
   return {
     path        = self:get_swagger_path(),
@@ -73,16 +72,31 @@ function API:to_swagger()
   }
 end
 
-function API:new_from_swagger(host, swagger)
-  if type(swagger) ~= 'table' or type(swagger.path) ~= 'string' then
-    error('the swagger parameter must be a table containig at least a path')
+function API:serialize()
+  local operations = {}
+  for _,method in ipairs(self:get_methods()) do
+    operations[#operations + 1] = self.operations[method]:serialize()
   end
 
-  local api = API:new(host, parse_swagger_path(swagger.path), swagger.guid)
+  initialize_guid(self)
 
-  if type(swagger.operations) == 'table' then
-    for _,operation_swagger in ipairs(swagger.operations) do
-      local operation = Operation:new_from_swagger(api, operation_swagger)
+  return {
+    path        = self.path,
+    guid        = self.guid,
+    operations  = operations
+  }
+end
+
+function API:deserialize(host, tbl)
+  if type(tbl) ~= 'table' or type(tbl.path) ~= 'string' then
+    error('the tbl parameter must be a table containig at least a path')
+  end
+
+  local api = API:new(host, tbl.path, tbl.guid)
+
+  if type(tbl.operations) == 'table' then
+    for _,operation_tbl in ipairs(tbl.operations) do
+      local operation = Operation:deserialize(api, operation_tbl)
       api.operations[operation.method] = operation
     end
   end
