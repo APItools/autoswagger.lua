@@ -6,7 +6,7 @@ describe('Parameter', function()
     local o = {}
     local p = Parameter:new(o, 'query', 'user_id')
     assert.equal(p.operation, o)
-    assert.equal(p.kind, 'query')
+    assert.equal(p.paramType, 'query')
     assert.equal(p.name, 'user_id')
   end)
 
@@ -41,7 +41,6 @@ describe('Parameter', function()
         name = 'user_id',
         paramType = 'query',
         description = "Possible values are: '1', '2', '3'" ,
-        possible_values = {'1', '2', '3'},
         ['type'] = 'string',
         required = false
       })
@@ -49,21 +48,33 @@ describe('Parameter', function()
     end)
   end)
 
-  describe(':new_from_swagger', function()
-    it('transforms swagger into a param', function()
+  describe(':serialize', function()
+    it('returns the a table that allows building a param', function()
+      local p = Parameter:new({}, 'query', 'user_id')
+      p:add_value(1)
+      p:add_value(2)
+      p:add_value(3)
+      assert.same(p:serialize(), {
+        name      = 'user_id',
+        paramType = 'query',
+        values    = {1, 2, 3}
+      })
+
+    end)
+  end)
+
+  describe(':deserialize', function()
+    it('transforms a table into a param', function()
       local swagger = {
         name = 'user_id',
         paramType = 'query',
-        description = "Possible values are: '1', '2', '3'" ,
-        possible_values   = {1,2,3},
-        ['type'] = 'string',
-        required = false
+        values   = {1,2,3},
       }
 
-      local p = Parameter:new_from_swagger({}, swagger)
+      local p = Parameter:deserialize({}, swagger)
 
       assert.equal(p.name, 'user_id')
-      assert.equal(p.kind, 'query')
+      assert.equal(p.paramType, 'query')
       assert.same(p.values, {1, 2, 3})
     end)
   end)

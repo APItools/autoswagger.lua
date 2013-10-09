@@ -33,10 +33,10 @@ end
 local Parameter = {}
 local Parametermt = {__index = Parameter}
 
-function Parameter:new(operation, kind, name)
+function Parameter:new(operation, paramType, name)
   return setmetatable({
     operation = operation,
-    kind = kind,
+    paramType = paramType,
     name = name,
     values = {},
     string_values = {}
@@ -62,31 +62,38 @@ function Parameter:get_description()
 end
 
 function Parameter:is_required()
-  return self.kind == 'path'
+  return self.paramType == 'path'
 end
 
 function Parameter:to_swagger()
   return {
-    paramType   = self.kind,
+    paramType   = self.paramType,
     name        = self.name,
     description = self:get_description(),
-    possible_values = self.values,
     required    = self:is_required(),
     ['type']    = 'string'
   }
 end
 
-function Parameter:new_from_swagger(operation, swagger)
-  if type(swagger) ~= 'table'
-  or type(swagger.paramType) ~= 'string'
-  or type(swagger.name) ~= 'string' then
-    error('swagger must exist and have proper paramType and name attributes')
+function Parameter:serialize()
+  return {
+    paramType   = self.paramType,
+    name        = self.name,
+    values      = self.values
+  }
+end
+
+function Parameter:deserialize(operation, tbl)
+  if type(tbl)           ~= 'table'
+  or type(tbl.paramType) ~= 'string'
+  or type(tbl.name)      ~= 'string' then
+    error('tbl must exist and have proper paramType and name attributes')
   end
 
-  local parameter = Parameter:new(operation, swagger.paramType, swagger.name)
+  local parameter = Parameter:new(operation, tbl.paramType, tbl.name)
 
-  if swagger.possible_values then
-    for _,v in ipairs(swagger.possible_values) do
+  if type(tbl.values) == 'table' then
+    for _,v in ipairs(tbl.values) do
       parameter:add_value(v)
     end
   end
