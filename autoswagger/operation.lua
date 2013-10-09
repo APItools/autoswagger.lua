@@ -24,6 +24,10 @@ local function get_verb_for_method(method, number)
   return VERBS[method] or straux.titleize(method)
 end
 
+local function initialize_guid(self)
+  self.guid = self.guid or md5.sumhexa(self.api.host.base_path .. self.api.path .. self.method)
+end
+
 
 local function get_tokens_without_EOL_or_extension(self)
   local result = array.copy(self.api.tokens)
@@ -182,12 +186,11 @@ end
 
 function Operation:to_swagger()
   local parameters = {}
-
   for _,name in ipairs(self:get_parameter_names()) do
     parameters[#parameters + 1] = self.parameters[name]:to_swagger()
   end
 
-  self.guid = self.guid or md5.sumhexa(self.api.host.base_path .. self.api.path .. self.method)
+  initialize_guid(self)
 
   return {
     httpMethod  = self.method, -- old swagger spec
@@ -200,16 +203,31 @@ function Operation:to_swagger()
   }
 end
 
-function Operation:new_from_swagger(api, swagger)
-  if type(swagger) ~= 'table' or type(swagger.method) ~= 'string' then
-    error('swagger required with a method')
+function Operation:serialize()
+  local parameters = {}
+  for _,name in ipairs(self:get_parameter_names()) do
+    parameters[#parameters + 1] = self.parameters[name]:serialize()
   end
 
-  local operation = Operation:new(api, swagger.method, swagger.guid)
+  initialize_guid(self)
 
-  if type(swagger.parameters) == 'table' then
-    for _,param_swagger in ipairs(swagger.parameters) do
-      local parameter = Parameter:new_from_swagger(self, param_swagger)
+  return {
+    method      = self.method,
+    guid        = self.guid,
+    parameters  = parameters
+  }
+end
+
+function Operation:deserialize(api, tbl)
+  if type(tbl) ~= 'table' or type(tbl.method) ~= 'string' then
+    error('tbl required with a method')
+  end
+
+  local operation = Operation:new(api, tbl.method, tbl.guid)
+
+  if type(tbl.parameters) == 'table' then
+    for _,param_tbl in ipairs(tbl.parameters) do
+      local parameter = Parameter:deserialize(self, param_tbl)
       operation.parameters[parameter.name] = parameter
     end
   end

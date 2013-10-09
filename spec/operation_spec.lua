@@ -89,32 +89,24 @@ describe('Operation', function()
     end)
   end)
 
-  describe(':new_from_swagger', function()
-    it('creates a new operation', function()
-      local swagger = {
+  describe(':deserialize', function()
+    it('creates a new operation from a serialized table', function()
+      local tbl = {
         method     = 'GET',
         guid       = 'guid1',
         parameters = {
           { paramType = 'path',
             name = 'app_id',
-            description = "Possible values are: '8', '9', '10'",
-            possible_values = {'8', '9', '10'},
-            guid = 'guid2',
-            ['type'] = 'string',
-            required = true
+            values = {'8', '9', '10'},
           },
           { paramType = 'path',
             name = 'user_id',
-            description = "Possible values are: '8', '9', '10'",
-            possible_values = {'8', '9', '10'},
-            guid = 'guid3',
-            ['type'] = 'string',
-            required = true
+            values = {'8', '9', '10'},
           }
         }
       }
 
-      local operation = Operation:new_from_swagger(api, swagger)
+      local operation = Operation:deserialize(api, tbl)
 
       assert.equal(operation.method, 'GET')
       assert.same(operation:get_parameter_names(), {'app_id', 'user_id'})
