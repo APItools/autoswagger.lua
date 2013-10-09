@@ -2,7 +2,7 @@ local Host = require('autoswagger.host')
 local EOL  = require('autoswagger.lib.straux').EOL
 
 local function create_host()
-  local h = Host:new('google.com')
+  local h = Host:new('google.com', nil, nil, nil, 'guid')
 
   h:learn("GET","/users/foo/activate.xml")
 
@@ -69,7 +69,7 @@ describe('Host', function()
     end)
 
     it('adds new paths only when they are really new', function()
-      local h = Host:new('google.com')
+      local h = Host:new('google.com', nil, nil, nil, 'host_guid')
 
       h:learn("GET","/users/foo/activate.xml")
       assert.same( {"/users/foo/activate.xml"}, h:get_paths())
@@ -140,7 +140,7 @@ describe('Host', function()
     end)
 
     it('can handle edge cases', function()
-      local h = Host:new('google.com')
+      local h = Host:new('google.com', nil, nil, nil, 'guid')
 
       h:learn("GET","/services/foo6/activate.xml")
       h:learn("GET","/services/foo7/activate.xml")
@@ -171,7 +171,7 @@ describe('Host', function()
 
     it('understands threshold', function()
 
-      local h = Host:new('google.com') -- default: threshold = 1
+      local h = Host:new('google.com', nil, nil, nil, 'guid') -- default threshold = 1
 
       h:learn("GET","/services/foo6/activate.xml")
       h:learn("GET","/services/foo6/deactivate.xml")
@@ -187,7 +187,7 @@ describe('Host', function()
       })
 
       -- never merge
-      h = Host:new('google.com', nil, 0.0)
+      h = Host:new('google.com', nil, 0.0, nil, 'guid')
 
       h:learn("GET","/services/foo6/activate.xml")
       h:learn("GET","/services/foo6/deactivate.xml")
@@ -205,7 +205,7 @@ describe('Host', function()
         "/services/foo8/deactivate.xml"
       })
 
-      h = Host:new('google.com', nil, 0.2)
+      h = Host:new('google.com', nil, 0.2, nil, 'guid')
       -- fake the score so that the words that are not var are seen more often
       -- the threshold 0.2 means that only merge if word is 5 (=1/0.2) times less frequent
       -- than the most common word
@@ -230,7 +230,7 @@ describe('Host', function()
 
   it('understands unmergeable tokens', function()
     -- without unmergeable tokens
-    local h = Host:new('google.com')
+    local h = Host:new('google.com', nil, nil, nil, 'guid')
 
     h:learn("GET","/services/foo6/activate.xml")
     h:learn("GET","/services/foo6/deactivate.xml")
@@ -250,7 +250,7 @@ describe('Host', function()
     })
 
     -- with unmergeable tokens
-    h = Host:new('google.com', nil, 1.0, {"activate", "deactivate"})
+    h = Host:new('google.com', nil, 1.0, {"activate", "deactivate"}, 'guid')
 
     h:learn("GET","/services/foo6/activate.xml")
     h:learn("GET","/services/foo6/deactivate.xml")
@@ -274,15 +274,15 @@ describe('Host', function()
   end)
 
   it('understands basepath', function()
-    local h = Host:new('google.com')
+    local h = Host:new('google.com', nil, nil, nil, 'guid')
     assert.equal(h.base_path, 'google.com')
 
-    local h = Host:new('google.com', 'http://google.com')
+    local h = Host:new('google.com', 'http://google.com', nil, nil, 'guid')
     assert.equal(h.base_path, 'http://google.com')
   end)
 
   it('unifies paths', function()
-    local h = Host:new('google.com')
+    local h = Host:new('google.com', nil, nil, nil, 'guid')
 
     h:learn("GET","/services/foo6/activate.xml")
     h:learn("GET","/services/foo6/deactivate.xml")
@@ -347,7 +347,7 @@ describe('Host', function()
   end)
 
   it('compresses paths (again)', function()
-    local h = Host:new('google.com')
+    local h = Host:new('google.com', nil, nil, nil, 'guid')
 
     h:learn("GET","/admin/api/features.xml")
     h:learn("GET","/admin/api/applications.xml")
@@ -367,7 +367,7 @@ describe('Host', function()
 
   it('compresses in even more cases', function()
 
-    local h = Host:new('google.com')
+    local h = Host:new('google.com', nil, nil, nil, 'guid')
 
     h:learn("GET","/admin/api/features.xml")
     h:learn("GET","/admin/api/applications.xml")
@@ -384,7 +384,7 @@ describe('Host', function()
       "/admin/xxx/*.xml"
     }, h:get_paths())
 
-    h = Host:new('google.com')
+    h = Host:new('google.com', nil, nil, nil, 'guid')
 
     h:learn("GET","/admin/api/features.xml")
     h:learn("GET","/admin/xxx/features.xml")
@@ -434,7 +434,7 @@ describe('Host', function()
     end)
 
     it('handles a regression test that happened in the past', function()
-      local h = Host:new('google.com')
+      local h = Host:new('google.com', nil, nil, nil, 'guid')
 
       h.root = {
         services = {
@@ -476,7 +476,7 @@ describe('Host', function()
 
     describe('to_swagger', function()
       it('returns a table with the swagger spec corresponding to the host', function()
-        local h = Host:new('localhost', 'http://google.com')
+        local h = Host:new('localhost', 'http://google.com', nil, nil, 'guid')
 
         for i=1,10 do
           h:learn('GET', '/users/' .. tostring(i) .. '/app/' .. tostring(i) .. '.xml')
@@ -522,7 +522,7 @@ describe('Host', function()
           apiVersion     = "1.0",
           swaggerVersion = "1.2",
           models         = {},
-          guid           = "c7b920f57e553df2bb68272f61570210",
+          guid           = "guid",
           root           = h.root,
           apis = {
             { path        = "/users/{user_id}/app/{app_id}.xml",

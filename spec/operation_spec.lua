@@ -2,18 +2,27 @@ local Host      = require 'autoswagger.host'
 local API       = require 'autoswagger.api'
 local Operation = require 'autoswagger.operation'
 
+
+
 describe('Operation', function()
+
+  local host, api
+
+  before_each(function()
+    host = Host:new('google.com', nil, nil, nil, 'host_guid')
+    api = API:new(host, '/foo', 'api_guid')
+  end)
+
   it('can be created', function()
-    local api = {host=Host:new('google.com'), path = '/foo'}
-    local o = Operation:new(api, 'GET')
+    local o = Operation:new(api, 'GET', 'operation', 'operation_guid')
     assert.equals(o.method, 'GET')
     assert.equals(o.api, api)
   end)
 
   describe(':parse_path_parameters', function()
-    it('reads the parameters of a given path, using its api', function()
-      local api = API:new(Host:new('google.com'), '/applications/*/users/*')
-      local o = Operation:new(api, 'GET')
+    it('#focus reads the parameters of a given path, using its api', function()
+      local api = API:new(host, '/applications/*/users/*', 'api_guid')
+      local o = Operation:new(api, 'GET', 'operation_guid')
 
       local params = o:parse_path_parameters('/applications/1/users/2')
       assert.same({application_id = '1', user_id = '2'}, params)
@@ -22,8 +31,8 @@ describe('Operation', function()
 
   describe(':add_parameter_info', function()
     it('reads params from the path', function()
-      local api = API:new(Host:new('google.com'), '/users/*/app/*.xml')
-      local o = Operation:new(api, 'GET')
+      local api = API:new(host, '/users/*/app/*.xml', 'api_guid')
+      local o = Operation:new(api, 'GET', 'operation_guid')
 
       for i=1,5 do
         o:add_parameter_info('/users/' .. tostring(i) .. '/app/' .. tostring(id) .. '.xml')
@@ -36,8 +45,8 @@ describe('Operation', function()
 
   describe(':get_summary', function()
     local function test_summary(method, path, result)
-      local api = API:new(Host:new('google.com'), path)
-      assert.equal(Operation:new(api, method):get_summary(), result)
+      local api = API:new(host, path, 'api_guid')
+      assert.equal(Operation:new(api, method, 'operation_guid'):get_summary(), result)
     end
 
     it('works in the usual simple cases', function()
@@ -103,7 +112,6 @@ describe('Operation', function()
         }
       }
 
-      local api =  API:new(Host:new('google.com'), '/foo')
       local operation = Operation:new_from_swagger(api, swagger)
 
       assert.equal(operation.method, 'GET')
