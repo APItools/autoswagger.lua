@@ -283,10 +283,10 @@ function Host:to_swagger()
   }
 end
 
-function Host:serialize()
-  local serialized_apis = {}
+function Host:to_table()
+  local api_tables = {}
   for _,api in pairs(self.apis) do
-    serialized_apis[#swagger_apis + 1] = api:serialize()
+    api_tables[#api_tables + 1] = api:to_table()
   end
 
   initialize_guid(self)
@@ -297,12 +297,12 @@ function Host:serialize()
     threshold           = self.threshold,
     unmergeable_tokens  = self.unmergeable_tokens,
     guid                = self.guid,
-    apis                = serialized_apis,
+    apis                = api_tables,
     root                = self.root
   }
 end
 
-function Host:deserialize(tbl)
+function Host:new_from_table(tbl)
   if type(tbl) ~= 'table' or type(tbl.basePath) ~= 'string' then
     error('tbl and tbl.basePath must exist')
   end
@@ -317,7 +317,7 @@ function Host:deserialize(tbl)
 
   if type(tbl.apis) == 'table' then
     for _,api_tbl in ipairs(tbl.apis) do
-      local api = API:deserialize(host, api_tbl)
+      local api = API:new_from_table(host, api_tbl)
       host.apis[api.path] = api
     end
   end

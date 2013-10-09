@@ -72,10 +72,11 @@ function API:to_swagger()
   }
 end
 
-function API:serialize()
-  local operations = {}
+function API:to_table()
+  local operation_tables, len = {}, 0
   for _,method in ipairs(self:get_methods()) do
-    operations[#operations + 1] = self.operations[method]:serialize()
+    len = len + 1
+    operation_tables[len] = self.operations[method]:to_table()
   end
 
   initialize_guid(self)
@@ -83,11 +84,11 @@ function API:serialize()
   return {
     path        = self.path,
     guid        = self.guid,
-    operations  = operations
+    operations  = operation_tables
   }
 end
 
-function API:deserialize(host, tbl)
+function API:new_from_table(host, tbl)
   if type(tbl) ~= 'table' or type(tbl.path) ~= 'string' then
     error('the tbl parameter must be a table containig at least a path')
   end
@@ -96,7 +97,7 @@ function API:deserialize(host, tbl)
 
   if type(tbl.operations) == 'table' then
     for _,operation_tbl in ipairs(tbl.operations) do
-      local operation = Operation:deserialize(api, operation_tbl)
+      local operation = Operation:new_from_table(api, operation_tbl)
       api.operations[operation.method] = operation
     end
   end

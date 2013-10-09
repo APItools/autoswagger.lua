@@ -48,13 +48,13 @@ describe('Parameter', function()
     end)
   end)
 
-  describe(':serialize', function()
+  describe(':to_table', function()
     it('returns the a table that allows building a param', function()
       local p = Parameter:new({}, 'query', 'user_id')
       p:add_value(1)
       p:add_value(2)
       p:add_value(3)
-      assert.same(p:serialize(), {
+      assert.same(p:to_table(), {
         name      = 'user_id',
         paramType = 'query',
         values    = {1, 2, 3}
@@ -63,15 +63,15 @@ describe('Parameter', function()
     end)
   end)
 
-  describe(':deserialize', function()
+  describe(':new_from_table', function()
     it('transforms a table into a param', function()
       local swagger = {
         name = 'user_id',
         paramType = 'query',
-        values   = {1,2,3},
+        values   = {1,2,3}
       }
 
-      local p = Parameter:deserialize({}, swagger)
+      local p = Parameter:new_from_table({}, swagger)
 
       assert.equal(p.name, 'user_id')
       assert.equal(p.paramType, 'query')

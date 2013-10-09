@@ -75,7 +75,7 @@ function Parameter:to_swagger()
   }
 end
 
-function Parameter:serialize()
+function Parameter:to_table()
   return {
     paramType   = self.paramType,
     name        = self.name,
@@ -83,7 +83,7 @@ function Parameter:serialize()
   }
 end
 
-function Parameter:deserialize(operation, tbl)
+function Parameter:new_from_table(operation, tbl)
   if type(tbl)           ~= 'table'
   or type(tbl.paramType) ~= 'string'
   or type(tbl.name)      ~= 'string' then

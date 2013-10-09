@@ -533,7 +533,7 @@ describe('Host', function()
 
   end)
 
-  describe('deserialize', function()
+  describe('new_from_table', function()
     it('rebuilds a brain using a table', function()
       local tbl = {
         hostname       = "localhost",
@@ -574,7 +574,7 @@ describe('Host', function()
         }
       }
 
-      local h = Host:deserialize(tbl)
+      local h = Host:new_from_table(tbl)
 
       assert.equal(h.hostname, 'localhost')
       assert.equal(h.base_path, 'foo.com')

@@ -203,22 +203,23 @@ function Operation:to_swagger()
   }
 end
 
-function Operation:serialize()
-  local parameters = {}
+function Operation:to_table()
+  local parameter_tables, len = {},0
   for _,name in ipairs(self:get_parameter_names()) do
-    parameters[#parameters + 1] = self.parameters[name]:serialize()
+    len = len + 1
+    parameter_tables[len] = self.parameters[name]:to_table()
   end
 
   initialize_guid(self)
 
   return {
-    method      = self.method,
-    guid        = self.guid,
-    parameters  = parameters
+    method     = self.method,
+    guid       = self.guid,
+    parameters = parameter_tables
   }
 end
 
-function Operation:deserialize(api, tbl)
+function Operation:new_from_table(api, tbl)
   if type(tbl) ~= 'table' or type(tbl.method) ~= 'string' then
     error('tbl required with a method')
   end
@@ -227,7 +228,7 @@ function Operation:deserialize(api, tbl)
 
   if type(tbl.parameters) == 'table' then
     for _,param_tbl in ipairs(tbl.parameters) do
-      local parameter = Parameter:deserialize(self, param_tbl)
+      local parameter = Parameter:new_from_table(self, param_tbl)
       operation.parameters[parameter.name] = parameter
     end
   end

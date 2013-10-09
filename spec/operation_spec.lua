@@ -89,8 +89,8 @@ describe('Operation', function()
     end)
   end)
 
-  describe(':deserialize', function()
-    it('creates a new operation from a serialized table', function()
+  describe(':new_from_table', function()
+    it('creates a new operation from a table', function()
       local tbl = {
         method     = 'GET',
         guid       = 'guid1',
@@ -106,7 +106,7 @@ describe('Operation', function()
         }
       }
 
-      local operation = Operation:deserialize(api, tbl)
+      local operation = Operation:new_from_table(api, tbl)
 
       assert.equal(operation.method, 'GET')
       assert.same(operation:get_parameter_names(), {'app_id', 'user_id'})

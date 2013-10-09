@@ -31,7 +31,7 @@ describe('API', function()
     end)
   end)
 
-  describe('deserialize', function()
+  describe('new_from_table', function()
     it('creates a new api', function()
       local tbl = {
         path       = "/foo/bar/*.xml",
@@ -55,7 +55,7 @@ describe('API', function()
         }
       }
 
-      local api = API:deserialize(host, tbl)
+      local api = API:new_from_table(host, tbl)
 
       assert.equal(api.path, '/foo/bar/*.xml')
       assert.same(api:get_methods(), {'GET', 'POST'})
