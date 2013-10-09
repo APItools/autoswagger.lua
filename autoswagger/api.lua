@@ -21,7 +21,7 @@ function API:new(host, path, guid)
     path        = path,
     tokens      = straux.tokenize(path),
     operations  = {},
-    guid        = guid or md5.sumhexa(host.base_path .. path)
+    guid        = guid
   }, APImt)
 end
 
@@ -62,6 +62,8 @@ function API:to_swagger()
   for _,method in ipairs(self:get_methods()) do
     operations[#operations + 1] = self.operations[method]:to_swagger()
   end
+
+  self.guid = self.guid or md5.sumhexa(self.host.base_path .. self.path)
 
   return {
     path        = self:get_swagger_path(),

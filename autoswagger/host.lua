@@ -193,7 +193,7 @@ function Host:new(hostname, base_path, threshold, unmergeable_tokens, guid)
     root                = {},
     score               = {},
     apis                = {},
-    guid                = guid or md5.sumhexa(base_path)
+    guid                = guid
   }, Hostmt)
 end
 
@@ -221,8 +221,7 @@ function Host:get_paths()
   return array.sort(get_paths_recursive(self, self.root, ""))
 end
 
-
-function Host:learn(method, path, query, body, headers)
+function Host:learn(method, path, query, body)
   local api_path = add_path(self, path)
 
   local api = self:find_api_by_equivalent_path(path)
@@ -266,6 +265,8 @@ function Host:to_swagger()
   for _,api in pairs(self.apis) do
     swagger_apis[#swagger_apis + 1] = api:to_swagger()
   end
+
+  self.guid  = self.guid or md5.sumhexa(self.base_path)
 
   return {
     apiVersion     = "1.0",

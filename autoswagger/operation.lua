@@ -44,7 +44,7 @@ function Operation:new(api, method, guid)
     api        = api,
     method     = method,
     parameters = {},
-    guid       = guid or md5.sumhexa(api.host.base_path .. api.path .. method)
+    guid       = guid
   }, Operationmt)
 end
 
@@ -186,6 +186,8 @@ function Operation:to_swagger()
   for _,name in ipairs(self:get_parameter_names()) do
     parameters[#parameters + 1] = self.parameters[name]:to_swagger()
   end
+
+  self.guid = self.guid or md5.sumhexa(self.api.host.base_path .. self.api.path .. self.method)
 
   return {
     httpMethod  = self.method, -- old swagger spec

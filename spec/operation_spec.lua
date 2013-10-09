@@ -93,11 +93,13 @@ describe('Operation', function()
     it('creates a new operation', function()
       local swagger = {
         method     = 'GET',
+        guid       = 'guid1',
         parameters = {
           { paramType = 'path',
             name = 'app_id',
             description = "Possible values are: '8', '9', '10'",
             possible_values = {'8', '9', '10'},
+            guid = 'guid2',
             ['type'] = 'string',
             required = true
           },
@@ -105,7 +107,7 @@ describe('Operation', function()
             name = 'user_id',
             description = "Possible values are: '8', '9', '10'",
             possible_values = {'8', '9', '10'},
-            ['type'] = 'string',
+            guid = 'guid3',
             ['type'] = 'string',
             required = true
           }

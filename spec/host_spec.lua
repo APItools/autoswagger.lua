@@ -479,7 +479,7 @@ describe('Host', function()
         local h = Host:new('localhost', 'http://google.com', nil, nil, 'guid')
 
         for i=1,10 do
-          h:learn('GET', '/users/' .. tostring(i) .. '/app/' .. tostring(i) .. '.xml')
+          h:learn('GET', '/users/' .. tostring(i) .. '/app/' .. tostring(i) .. '.xml', nil, nil, nil, tostring(i))
         end
 
         local s = h:to_swagger()
