@@ -1,6 +1,9 @@
 local PATH = (...):match("(.+%.)[^%.]+$") or ""
 local straux   = require(PATH .. 'straux')
 
+local ROOT_PATH = '/'
+local DELIMITER = ROOT_PATH
+
 local array = {}
 
 local map = function(arr, f)
@@ -59,7 +62,7 @@ local untokenize = function(tokens)
   tokens[length] = nil -- remove EOL
   length = length - 1
 
-  if length < 1 then return "" end
+  if length < 1 then return ROOT_PATH end
 
   local extension = tokens[length]
 
@@ -68,7 +71,7 @@ local untokenize = function(tokens)
     tokens[length] = nil
   end
 
-  return '/' .. table.concat(tokens, '/')
+  return ROOT_PATH .. table.concat(tokens, DELIMITER)
 end
 
 local array = {
