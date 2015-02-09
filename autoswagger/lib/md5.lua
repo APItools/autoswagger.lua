@@ -1,171 +1,207 @@
--------------------------------------------------------------------------------
--- MD5 computation in Lua (5.1)
--------------------------------------------------------------------------------
+local md5 = {
+  _VERSION     = "md5.lua 1.0.0",
+  _DESCRIPTION = "MD5 computation in Lua (5.1-3, LuaJIT)",
+  _URL         = "https://github.com/kikito/md5.lua",
+  _LICENSE     = [[
+    MIT LICENSE
+
+    Copyright (c) 2013 Enrique García Cota + Adam Baldwin + hanzao + Equi 4 Software
+
+    Permission is hereby granted, free of charge, to any person obtaining a
+    copy of this software and associated documentation files (the
+    "Software"), to deal in the Software without restriction, including
+    without limitation the rights to use, copy, modify, merge, publish,
+    distribute, sublicense, and/or sell copies of the Software, and to
+    permit persons to whom the Software is furnished to do so, subject to
+    the following conditions:
+
+    The above copyright notice and this permission notice shall be included
+    in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  ]]
+}
+
 -- bit lib implementions
 
 local floor, abs, max = math.floor, math.abs, math.max
 local char, byte, format, rep, sub =
   string.char, string.byte, string.format, string.rep, string.sub
+local bit_or, bit_and, bit_not, bit_xor, bit_rshift, bit_lshift
 
-local function check_int(n)
-  -- checking not float
-  if(n - floor(n) > 0) then
-    error("trying to use bitwise operation on non-integer!")
-  end
-end
+local ok, bit = pcall(require, 'bit')
+if not ok then ok, bit = pcall(require, 'bit32') end
 
-local function tbl2number(tbl)
-  local n = #tbl
-
-  local rslt = 0
-  local power = 1
-  for i = 1, n do
-    rslt = rslt + tbl[i]*power
-    power = power*2
-  end
-
-  return rslt
-end
-
-local function expand(tbl_m, tbl_n)
-  local big = {}
-  local small = {}
-  if(#tbl_m > #tbl_n) then
-    big = tbl_m
-    small = tbl_n
-  else
-    big = tbl_n
-    small = tbl_m
-  end
-  -- expand small
-  for i = #small + 1, #big do
-    small[i] = 0
-  end
-
-end
-
-local to_bits -- needs to be declared before bit_not
-
-local function bit_not(n)
-  local tbl = to_bits(n)
-  local size = max(#tbl, 32)
-  for i = 1, size do
-    if(tbl[i] == 1) then
-      tbl[i] = 0
-    else
-      tbl[i] = 1
-    end
-  end
-  return tbl2number(tbl)
-end
-
--- defined as local above
-to_bits = function (n)
-  check_int(n)
-  if(n < 0) then
-    -- negative
-    return to_bits(bit_not(abs(n)) + 1)
-  end
-  -- to bits table
-  local tbl = {}
-  local cnt = 1
-  while (n > 0) do
-    local last = math.mod(n,2)
-    if(last == 1) then
-      tbl[cnt] = 1
-    else
-      tbl[cnt] = 0
-    end
-    n = (n-last)/2
-    cnt = cnt + 1
-  end
-
-  return tbl
-end
-
-local function bit_or(m, n)
-  local tbl_m = to_bits(m)
-  local tbl_n = to_bits(n)
-  expand(tbl_m, tbl_n)
-
-  local tbl = {}
-  local rslt = max(#tbl_m, #tbl_n)
-  for i = 1, rslt do
-    if(tbl_m[i]== 0 and tbl_n[i] == 0) then
-      tbl[i] = 0
-    else
-      tbl[i] = 1
+if ok then
+  bit_or, bit_and, bit_not, bit_xor = bit.bor, bit.band, bit.bnot, bit.bxor
+  bit_rshift, bit_lshift = bit.rshift, bit.lshift
+else
+  local function check_int(n)
+    -- checking not float
+    if(n - floor(n) > 0) then
+      error("trying to use bitwise operation on non-integer!")
     end
   end
 
-  return tbl2number(tbl)
-end
+  local function tbl2number(tbl)
+    local n = #tbl
 
-local function bit_and(m, n)
-  local tbl_m = to_bits(m)
-  local tbl_n = to_bits(n)
-  expand(tbl_m, tbl_n)
-
-  local tbl = {}
-  local rslt = max(#tbl_m, #tbl_n)
-  for i = 1, rslt do
-    if(tbl_m[i]== 0 or tbl_n[i] == 0) then
-      tbl[i] = 0
-    else
-      tbl[i] = 1
+    local rslt = 0
+    local power = 1
+    for i = 1, n do
+      rslt = rslt + tbl[i]*power
+      power = power*2
     end
+
+    return rslt
   end
 
-  return tbl2number(tbl)
-end
-
-local function bit_xor(m, n)
-  local tbl_m = to_bits(m)
-  local tbl_n = to_bits(n)
-  expand(tbl_m, tbl_n)
-
-  local tbl = {}
-  local rslt = max(#tbl_m, #tbl_n)
-  for i = 1, rslt do
-    if(tbl_m[i] ~= tbl_n[i]) then
-      tbl[i] = 1
+  local function expand(tbl_m, tbl_n)
+    local big = {}
+    local small = {}
+    if(#tbl_m > #tbl_n) then
+      big = tbl_m
+      small = tbl_n
     else
-      tbl[i] = 0
+      big = tbl_n
+      small = tbl_m
     end
+    -- expand small
+    for i = #small + 1, #big do
+      small[i] = 0
+    end
+
   end
 
-  return tbl2number(tbl)
-end
+  local to_bits -- needs to be declared before bit_not
 
-local function bit_rshift(n, bits)
-  check_int(n)
-
-  local high_bit = 0
-  if(n < 0) then
-    -- negative
-    n = bit_not(abs(n)) + 1
-    high_bit = 2147483648 -- 0x80000000
+  function bit_not(n)
+    local tbl = to_bits(n)
+    local size = max(#tbl, 32)
+    for i = 1, size do
+      if(tbl[i] == 1) then
+        tbl[i] = 0
+      else
+        tbl[i] = 1
+      end
+    end
+    return tbl2number(tbl)
   end
 
-  for i=1, bits do
-    n = n/2
-    n = bit_or(floor(n), high_bit)
-  end
-  return floor(n)
-end
+  -- defined as local above
+  to_bits = function (n)
+    check_int(n)
+    if(n < 0) then
+      -- negative
+      return to_bits(bit_not(abs(n)) + 1)
+    end
+    -- to bits table
+    local tbl = {}
+    local cnt = 1
+    while (n > 0) do
+      local last = math.mod(n,2)
+      if(last == 1) then
+        tbl[cnt] = 1
+      else
+        tbl[cnt] = 0
+      end
+      n = (n-last)/2
+      cnt = cnt + 1
+    end
 
-local function bit_lshift(n, bits)
-  check_int(n)
-
-  if(n < 0) then
-    -- negative
-    n = bit_not(abs(n)) + 1
+    return tbl
   end
 
-  for i=1, bits do
-    n = n*2
+  function bit_or(m, n)
+    local tbl_m = to_bits(m)
+    local tbl_n = to_bits(n)
+    expand(tbl_m, tbl_n)
+
+    local tbl = {}
+    local rslt = max(#tbl_m, #tbl_n)
+    for i = 1, rslt do
+      if(tbl_m[i]== 0 and tbl_n[i] == 0) then
+        tbl[i] = 0
+      else
+        tbl[i] = 1
+      end
+    end
+
+    return tbl2number(tbl)
   end
-  return bit_and(n, 4294967295) -- 0xFFFFFFFF
+
+  function bit_and(m, n)
+    local tbl_m = to_bits(m)
+    local tbl_n = to_bits(n)
+    expand(tbl_m, tbl_n)
+
+    local tbl = {}
+    local rslt = max(#tbl_m, #tbl_n)
+    for i = 1, rslt do
+      if(tbl_m[i]== 0 or tbl_n[i] == 0) then
+        tbl[i] = 0
+      else
+        tbl[i] = 1
+      end
+    end
+
+    return tbl2number(tbl)
+  end
+
+  function bit_xor(m, n)
+    local tbl_m = to_bits(m)
+    local tbl_n = to_bits(n)
+    expand(tbl_m, tbl_n)
+
+    local tbl = {}
+    local rslt = max(#tbl_m, #tbl_n)
+    for i = 1, rslt do
+      if(tbl_m[i] ~= tbl_n[i]) then
+        tbl[i] = 1
+      else
+        tbl[i] = 0
+      end
+    end
+
+    return tbl2number(tbl)
+  end
+
+  function bit_rshift(n, bits)
+    check_int(n)
+
+    local high_bit = 0
+    if(n < 0) then
+      -- negative
+      n = bit_not(abs(n)) + 1
+      high_bit = 2147483648 -- 0x80000000
+    end
+
+    for i=1, bits do
+      n = n/2
+      n = bit_or(floor(n), high_bit)
+    end
+    return floor(n)
+  end
+
+  function bit_lshift(n, bits)
+    check_int(n)
+
+    if(n < 0) then
+      -- negative
+      n = bit_not(abs(n)) + 1
+    end
+
+    for i=1, bits do
+      n = n*2
+    end
+    return bit_and(n, 4294967295) -- 0xFFFFFFFF
+  end
 end
 
 -- convert little-endian 32-bit int to a 4-char string
@@ -206,7 +242,7 @@ end
 local swap = function (w) return str2bei(lei2str(w)) end
 
 local function hex2binaryaux(hexval)
-    return char(tonumber(hexval, 16))
+  return char(tonumber(hexval, 16))
 end
 
 local function hex2binary(hex)
@@ -324,8 +360,6 @@ local function transform(A,B,C,D,X)
 end
 
 ----------------------------------------------------------------
-
-local md5 = {}
 
 function md5.sumhexa(s)
   local msgLen = #s
